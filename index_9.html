@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alexshop – Minecraft Server Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deepslate:#12151b; --slate:#1a1e27; --panel:#212633; --line:#2f3646;
+  --text:#e8ecf3; --muted:#9aa4b8;
+  --diamond:#4de8d8; --diamond-deep:#0e5f63;
+  --nether:#b78a78; --nether-deep:#43303a; --ember:#ff8a3d;
+  --good:#7ee787; --bad:#ff7b72;
+  --redstone:#ff3b30;
+  --pixel:'Silkscreen','Courier New',monospace;
+  --sans:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);font-family:var(--sans);line-height:1.5;
+  background:linear-gradient(180deg,#e4f0e2 0%,#c6dec9 55%,#a5c8ae 100%) fixed;
+  min-height:100vh;
+}
+img{image-rendering:pixelated}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--diamond);outline-offset:2px}
+
+#petals{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+header.top{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:12px clamp(16px,4vw,48px);background:rgba(238,247,238,.9);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(30,70,45,.2);
+  transition:box-shadow .3s ease;
+}
+header.top:hover{box-shadow:0 4px 20px rgba(35,80,50,.15)}
+
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--pixel);font-size:20px;font-weight:700;color:#1f3a2a}
+.brand img{width:32px;height:32px;animation:spinFloat 4s ease-in-out infinite}
+@keyframes spinFloat{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-4px) rotate(8deg)}
+}
+
+.cart-btn{
+  display:flex;align-items:center;gap:10px;background:#fbfdf9;color:#1f3a2a;border:1px solid #cfe0d1;
+  border-radius:10px;padding:9px 14px;font-weight:600;font-size:15px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 8px rgba(35,80,50,.08);
+}
+.cart-btn:hover{border-color:var(--diamond);background:#fff;transform:translateY(-2px);box-shadow:0 6px 16px rgba(47,185,173,.25)}
+.cart-btn img{width:22px;height:22px;transition:transform .2s}
+.cart-btn:hover img{transform:scale(1.15) rotate(-6deg)}
+.badge{
+  min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:var(--diamond);color:#06302f;
+  font-weight:700;font-size:13px;display:grid;place-items:center;
+  transition:transform .2s;
+}
+.badge.bump{animation:cartBump .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cartBump{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.4) rotate(12deg)}
+  100%{transform:scale(1)}
+}
+
+.hero{
+  position:relative;z-index:1;max-width:1200px;margin:0 auto;
+  padding:clamp(30px,5vw,60px) clamp(16px,4vw,48px) 20px;
+  text-align:center;
+}
+.hero h1{
+  font-family:var(--pixel);font-size:clamp(24px,4vw,44px);line-height:1.15;margin:0 0 14px;
+  font-weight:700;color:#1f3a2a;
+  animation:fadeSlideDown .8s cubic-bezier(.16,1,.3,1) both;
+}
+.hero p{
+  max-width:62ch;margin:0 auto 20px;color:#3f5b49;font-size:17px;
+  animation:fadeSlideDown .8s .15s cubic-bezier(.16,1,.3,1) both;
+}
+.fee-badge{
+  display:inline-flex;align-items:center;gap:8px;background:#eef6ed;color:#1f3a2a;
+  border:1px solid #b6d3bc;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;
+  margin-bottom:12px;box-shadow:0 2px 8px rgba(35,80,50,.1);
+  animation:pulseBadge 3s infinite ease-in-out;
+}
+@keyframes pulseBadge{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.03);box-shadow:0 4px 14px rgba(47,185,173,.35)}
+}
+.fee-badge img{width:18px;height:18px}
+@keyframes fadeSlideDown{
+  from{opacity:0;transform:translateY(-20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.shop{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:10px clamp(16px,4vw,48px) 80px}
+.filters{
+  display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin-bottom:24px;padding:14px 18px;
+  background:#fbfdf9;border:1px solid #cfe0d1;border-radius:14px;box-shadow:0 8px 24px rgba(35,80,50,.12);
+  transition:box-shadow .2s;
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  background:transparent;color:#5f7a68;border:1px solid #cfe0d1;border-radius:999px;
+  padding:7px 16px;font-weight:600;font-size:14px;transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.chip:hover{color:#1f3a2a;border-color:#96b09b;transform:translateY(-1px)}
+.chip[aria-pressed=true]{background:#1f3a2a;color:#fff;border-color:#1f3a2a;transform:scale(1.04)}
+.chip.d[aria-pressed=true]{background:var(--diamond);border-color:var(--diamond);color:#05302e}
+.chip.n[aria-pressed=true]{background:var(--nether);border-color:var(--nether);color:#2a1a14}
+.count{margin-left:auto;color:#5f7a68;font-size:14px;font-weight:500}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.card{
+  background:#fbfdf9;border:1px solid #cfe0d1;border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(35,80,50,.12);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .25s;
+  position:relative;
+}
+.card:hover{
+  transform:translateY(-6px);box-shadow:0 14px 30px rgba(35,80,50,.22);
+  border-color:#2fb9ad;
+}
+.card.n:hover{border-color:#e0813f}
+.card.r:hover{border-color:var(--redstone)}
+
+.art{height:140px;display:grid;place-items:center;position:relative;overflow:hidden}
+.d .art{background:radial-gradient(circle at 50% 45%,#f3fffd 0%,#bfece8 60%,#8fd6cf 100%)}
+.n .art{background:radial-gradient(circle at 50% 45%,#fff3ec 0%,#ecccbd 60%,#d9ab98 100%)}
+.r .art{background:radial-gradient(circle at 50% 45%,#fff0f0 0%,#f9c9c7 60%,#e89b98 100%)}
+.b .art{background:radial-gradient(circle at 50% 45%,#f4faee 0%,#d3e6cf 60%,#b2cfad 100%)}
+
+.art img{
+  width:84px;height:84px;filter:drop-shadow(0 6px 8px rgba(25,60,40,.25));
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.card:hover .art img{transform:scale(1.15) rotate(3deg)}
+
+.rar{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.8);color:#1f3a2a;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.rar.rare{color:#087a8c} .rar.epic{color:#8a2bb5} .rar.red{color:#c92a2a}
+
+.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;color:#1f3a2a}
+.body h3{margin:0;font-size:16px;font-weight:700}
+.note{margin:0;color:#5f7a68;font-size:12px}
+
+.opt{border:1px solid #cfe0d1;border-radius:10px;background:#f3f8f2;padding:0 10px;transition:border-color .2s}
+.opt:hover{border-color:#96b09b}
+.opt summary{cursor:pointer;padding:8px 0;font-weight:600;font-size:13px}
+.opt summary small{color:#5f7a68;font-weight:400}
+.opt[open] summary{border-bottom:1px solid #cfe0d1;margin-bottom:6px}
+.eo{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px;padding:3px 0;cursor:pointer;color:#583d8b}
+.eo input{accent-color:var(--diamond);width:15px;height:15px}
+.eo span{flex:1}.eo em{font-style:normal;color:#5f7a68;font-size:12px}
+
+.price{display:flex;align-items:center;gap:6px;font-weight:700;font-size:18px;margin-top:auto;padding-top:4px;flex-wrap:wrap}
+.price img{width:20px;height:20px}
+.price small{display:block;font-size:11px;font-weight:500;color:#5f7a68;flex-basis:100%;margin-top:-2px}
+
+.quick-qty{display:flex;gap:5px;align-items:center;margin-top:2px}
+.qbtn{
+  background:#f3f8f2;border:1px solid #cfe0d1;color:#1f3a2a;font-size:11px;font-weight:700;
+  border-radius:6px;padding:3px 7px;transition:all .15s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+}
+.qbtn:hover{background:#fff;border-color:var(--diamond);color:#0e5f63;transform:translateY(-1px)}
+.qbtn:active{transform:scale(.92)}
+.qbtn.active{background:var(--diamond);border-color:var(--diamond);color:#05302e}
+
+.buy{display:flex;gap:8px;align-items:stretch;margin-top:4px}
+.qty{display:flex;border:1px solid #cfe0d1;border-radius:10px;overflow:hidden;background:#fff}
+.qty button{width:32px;background:transparent;border:0;color:#1f3a2a;font-size:17px;transition:background .15s}
+.qty button:hover{background:#e2eee2}
+.qty button:active{transform:scale(.92)}
+.qty input{width:48px;text-align:center;background:transparent;border:0;border-inline:1px solid #cfe0d1;color:#1f3a2a;font:600 14px var(--sans);-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+.add{
+  flex:1;border:0;border-radius:10px;font-weight:700;font-size:13px;padding:9px;
+  background:var(--diamond);color:#05302e;box-shadow:0 3px 0 #1b9f95;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.n .add{background:var(--nether);color:#2a1a14;box-shadow:0 3px 0 #7e523f}
+.r .add{background:#ff968f;color:#4a100d;box-shadow:0 3px 0 #b34a44}
+.b .add{background:#9ad493;color:#173d12;box-shadow:0 3px 0 #4f8548}
+.add:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 4px 0 #1b9f95}
+.add:active{transform:translateY(2px);box-shadow:0 1px 0 #1b9f95}
+.add.done{
+  background:var(--good)!important;color:#06280d!important;box-shadow:0 2px 0 #2b8237!important;
+  animation:donePulse .4s ease;
+}
+@keyframes donePulse{
+  50%{transform:scale(1.06)}
+}
+
+/* Flying item animation */
+.flying-particle{
+  position:fixed;z-index:9999;width:36px;height:36px;pointer-events:none;
+  image-rendering:pixelated;transition:all .6s cubic-bezier(.22,.8,.36,1);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));
+}
+
+/* Drawer / Cart */
+.overlay{position:fixed;inset:0;background:rgba(15,35,20,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:30;backdrop-filter:blur(3px)}
+.overlay.on{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(450px,100%);background:#fbfdf9;
+  border-left:1px solid #cfe0d1;z-index:40;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);
+  box-shadow:-12px 0 40px rgba(25,60,40,.25);color:#1f3a2a;
+}
+.drawer.on{transform:none}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #cfe0d1}
+.drawer h2{margin:0;font-family:var(--pixel);font-size:18px}
+.x{background:transparent;border:1px solid #cfe0d1;color:#1f3a2a;width:34px;height:34px;border-radius:8px;font-size:18px;transition:all .15s}
+.x:hover{border-color:#c0392b;color:#c0392b;transform:rotate(90deg)}
+
+.lines{flex:1;overflow:auto;padding:12px 20px}
+.line{
+  display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:12px 0;
+  border-bottom:1px solid #cfe0d1;animation:lineSlideIn .3s ease both;
+}
+@keyframes lineSlideIn{
+  from{opacity:0;transform:translateX(15px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.line img{width:48px;height:48px;background:#edf6ed;border-radius:8px;padding:4px}
+.line b{display:block;font-size:14px} .line small{color:#5f7a68;display:block}
+.line .sum{text-align:right;font-weight:700;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.rm{background:none;border:0;color:#c0392b;font-size:12px;padding:0;text-decoration:underline;transition:opacity .15s}
+.rm:hover{opacity:.7}
+
+.empty{text-align:center;color:#5f7a68;padding:60px 20px}
+.empty img{width:56px;opacity:.5;margin-bottom:10px;animation:floatEmpty 3s ease-in-out infinite}
+@keyframes floatEmpty{0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}}
+
+.foot{padding:16px 20px;border-top:1px solid #cfe0d1;display:grid;gap:10px;background:#f3f8f2}
+.fee-row{display:flex;justify-content:space-between;font-size:13px;color:#5f7a68}
+.total{display:flex;justify-content:space-between;align-items:center;font-size:17px;font-weight:700}
+.total strong{display:flex;align-items:center;gap:6px;font-size:22px;color:#1f3a2a}
+.total img{width:22px;height:22px}
+.primary{
+  background:var(--diamond);color:#05302e;border:0;border-radius:10px;font-weight:700;font-size:15px;
+  padding:12px;box-shadow:0 3px 0 #1b9f95;transition:all .15s cubic-bezier(.34,1.56,.64,1);
+}
+.primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 0 #1b9f95;filter:brightness(1.05)}
+.primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #1b9f95}
+.primary:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+.ghost{background:transparent;color:#5f7a68;border:1px solid #cfe0d1;border-radius:10px;padding:9px;font-weight:600;transition:all .15s}
+.ghost:hover{color:#1f3a2a;border-color:#96b09b}
+
+/* Modal Dialog */
+dialog{
+  border:1px solid #cfe0d1;border-radius:18px;background:#fbfdf9;color:#1f3a2a;padding:0;
+  width:min(520px,calc(100% - 24px));max-height:92vh;box-shadow:0 20px 50px rgba(25,60,40,.3);
+}
+dialog[open]{animation:dialogPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes dialogPop{
+  from{opacity:0;transform:scale(.92) translateY(10px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+dialog::backdrop{background:rgba(15,35,20,.6);backdrop-filter:blur(4px)}
+.dlg{padding:22px;display:grid;gap:14px}
+.dlg h2{margin:0;font-family:var(--pixel);font-size:20px}
+.sum-list{background:#f3f8f2;border-radius:12px;padding:6px 14px;max-height:190px;overflow:auto;font-size:13px;border:1px solid #cfe0d1}
+.sum-list div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #e1ede2}
+.sum-list div:last-child{border:0}
+label{display:grid;gap:5px;font-weight:600;font-size:13px}
+label small{color:#5f7a68;font-weight:400}
+input.f,textarea.f{background:#fff;border:1px solid #cfe0d1;border-radius:10px;color:#1f3a2a;padding:10px 12px;font:500 14px var(--sans);width:100%;transition:border-color .2s}
+input.f:focus,textarea.f:focus{outline:none;border-color:var(--diamond);box-shadow:0 0 0 3px rgba(77,232,216,.25)}
+textarea.f{resize:vertical;min-height:70px}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px}
+.msg.err{background:rgba(220,80,70,.12);border:1px solid rgba(192,57,43,.4);color:#9b2c25}
+.success{text-align:center;padding:16px 0}
+.success img{width:72px;animation:successBounce .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes successBounce{0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)}}
+.dlg .row{display:flex;gap:10px} .dlg .row .primary{flex:1}
+
+footer{position:relative;z-index:1;text-align:center;color:#3f5b49;font-size:14px;padding:26px 16px 46px;border-top:1px solid rgba(30,70,45,.2)}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,120px);
+  background:#fbfdf9;color:#1f3a2a;border:2px solid var(--diamond);padding:10px 18px;
+  border-radius:12px;z-index:60;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  font-weight:600;box-shadow:0 8px 24px rgba(25,60,40,.25);display:flex;align-items:center;gap:8px;
+}
+.toast.on{transform:translate(-50%,0)}
+.user-pill{
+  display:flex;align-items:center;gap:8px;background:#fbfdf9;border:1px solid #cfe0d1;
+  padding:5px 12px 5px 8px;border-radius:999px;font-weight:600;font-size:13px;color:#1f3a2a;
+  box-shadow:0 2px 8px rgba(35,80,50,.08);
+}
+.user-pill img{width:22px;height:22px;border-radius:4px;image-rendering:pixelated}
+.logout-btn{
+  background:none;border:none;color:#c0392b;font-size:11px;cursor:pointer;
+  padding:0 0 0 6px;text-decoration:underline;
+}
+
+/* Login Modal */
+#loginOverlay{
+  position:fixed;inset:0;background:rgba(15,35,20,.75);backdrop-filter:blur(6px);
+  z-index:999;display:grid;place-items:center;padding:16px;
+}
+.login-box{
+  background:#fbfdf9;border:2px solid #cfe0d1;border-radius:20px;padding:28px 24px;
+  width:min(400px,100%);text-align:center;box-shadow:0 20px 60px rgba(25,60,40,.4);
+  animation:dialogPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+.login-box h2{font-family:var(--pixel);font-size:20px;color:#1f3a2a;margin:12px 0 6px}
+.login-box p{font-size:14px;color:#5f7a68;margin:0 0 18px}
+.login-input{
+  width:100%;background:#fff;border:2px solid #cfe0d1;border-radius:10px;
+  padding:12px 14px;font:600 16px var(--sans);color:#1f3a2a;text-align:center;
+  margin-bottom:12px;transition:border-color .2s;
+}
+.login-input:focus{outline:none;border-color:var(--diamond);box-shadow:0 0 0 3px rgba(77,232,216,.25)}
+.nav-tabs{
+  display:flex;gap:6px;background:rgba(238,247,238,.9);border:1px solid #cfe0d1;
+  padding:4px;border-radius:12px;margin-left:16px;
+}
+.tab-btn{
+  background:transparent;border:0;color:#5f7a68;font-weight:700;font-size:14px;
+  padding:7px 16px;border-radius:9px;transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;gap:6px;
+}
+.tab-btn:hover{color:#1f3a2a;background:rgba(255,255,255,.6)}
+.tab-btn.active{background:#1f3a2a;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+
+.sell-card{border-color:#e0cdab}
+.sell-card:hover{border-color:#d4a359;box-shadow:0 14px 30px rgba(180,120,40,.22)}
+.sell-btn{background:#e5a842!important;color:#2c1b02!important;box-shadow:0 3px 0 #ab751b!important}
+.sell-btn:hover{filter:brightness(1.08)!important}
+
+.pawn-badge{
+  display:inline-flex;align-items:center;gap:8px;background:#fcf6ea;color:#6b470d;
+  border:1px solid #e8cf9e;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;
+  margin-bottom:12px;box-shadow:0 2px 8px rgba(180,120,40,.1);
+}
+.sell-card .art{background:radial-gradient(circle at 50% 45%,#fff8e6 0%,#f0d9a8 60%,#dcb673 100%)}
+.sell-card .add{background:#e5a842;color:#2c1b02}
+.rar.sell{color:#a86a0c}
+.pawn-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:14px;
+  background:#fffaf0;border:1px solid #e8cf9e;border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(120,80,20,.3);font-weight:600;color:#6b470d}
+.pawn-bar[hidden]{display:none}
+#pawnDlg{border:1px solid #cfe0d1;border-radius:18px;background:#fbfdf9;color:#1f3a2a;padding:0;width:min(520px,calc(100% - 24px));max-height:92vh}
+#pawnDlg::backdrop{background:rgba(5,7,10,.72)}
+#pawnDlg [hidden]{display:none!important}
+.pts-chip{background:#efe7fb;color:#4a2f7a;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700}
+.sale-banner{position:sticky;top:0;z-index:40;text-align:center;font-weight:700;padding:9px 12px;color:#fff;background:linear-gradient(90deg,#e0592a,#f2a03d)}
+.sale-banner[hidden]{display:none}
+.pts-btn{background:#7c5cc4!important;color:#fff!important}
+.pts-btn:disabled{opacity:.45;cursor:not-allowed}
+.ap-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;background:#f3f8f2;border:1px solid #cfe0d1;border-radius:8px;font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+
+<canvas id="petals" aria-hidden="true"></canvas>
+
+<!-- Login Overlay / Whitelist Gate -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <img data-tex="diamond" style="width:48px;height:48px" alt="">
+    <h2>Server Shop Login</h2>
+    <p>Zugriff nur für Whitelist-Spieler unseres Servers. Gib deinen Minecraft-Namen und dein 4-stelliges Passwort ein:</p>
+    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+      <input type="text" id="loginUsername" class="login-input" placeholder="Minecraft-Name eingeben..." autocomplete="off" required>
+      <input type="password" id="loginPin" class="login-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="4-stelliges Passwort" autocomplete="off" required>
+      <div id="loginError" class="msg err" style="margin-bottom:12px" hidden>❌ Name oder Passwort falsch!</div>
+      <button type="submit" class="primary" style="width:100%;padding:13px;font-size:16px">Shop betreten ➔</button>
+    </form>
+  </div>
+</div>
+
+<header class="top">
+  <div style="display:flex;align-items:center">
+    <div class="brand"><img src="" data-tex="diamond" alt="">Alexshop</div>
+    <nav class="nav-tabs">
+      <button class="tab-btn active" id="tabShop" onclick="switchPage('shop')">🛒 Shop</button>
+      <button class="tab-btn" id="tabPawn" onclick="switchPage('pawn')">🏦 Pfandhaus</button>
+      <button class="tab-btn" id="tabPts" onclick="switchPage('pts')">⭐ Punkteshop</button>
+    </nav>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="userProfile" class="user-pill" hidden>
+      <img id="userHead" src="" alt="">
+      <span id="userNameDisplay">Steve</span>
+      <span id="myPts" class="pts-chip" title="Deine Punkte">⭐ 0</span>
+      <button class="logout-btn" id="logoutBtn" title="Abmelden">Abmelden</button>
+    </div>
+    <button class="cart-btn" id="openCart" aria-label="Warenkorb öffnen">
+      <img data-tex="bundle" alt=""><span>Warenkorb</span><span class="badge" id="badge">0</span>
+    </button>
+  </div>
+</header>
+<div id="saleBanner" class="sale-banner" hidden></div>
+
+<!-- HERO SHOP -->
+<section class="hero" id="heroShop">
+  <div>
+    <h1>Minecraft Server Shop</h1>
+    <p>Ausrüstung, Redstone-Komponenten, Kisten, Hopper, Holz &amp; Eisen direkt auf unserem Server bestellen.</p>
+    <div class="fee-badge">
+      <img data-tex="diamond" alt="">
+      <span><strong>1 Diamant Bearbeitungsgebühr</strong> nur pro bestelltem Werkzeug (Tools)</span>
+    </div>
+  </div>
+</section>
+
+<!-- HERO PFANDHAUS (ANKAUF) -->
+<section class="hero" id="heroPawn" style="display:none">
+  <div>
+    <h1 style="color:#6b470d">🏦 Pfandhaus (Ankauf)</h1>
+    <p style="color:#5c4728">Verkaufe deine überschüssigen Items und Ressourcen direkt gegen bare Diamanten!</p>
+    <div class="pawn-badge">
+      <img data-tex="diamond" alt="">
+      <span>Wir zahlen sofort in <strong>Diamanten</strong> bei Übergabe auf dem Server!</span>
+    </div>
+  </div>
+</section>
+
+<!-- HERO PUNKTESHOP -->
+<section class="hero" id="heroPts" style="display:none">
+  <div>
+    <h1 style="color:#4a2f7a">⭐ Punkteshop</h1>
+    <p style="color:#4a3a66">Für jeden ausgegebenen Diamanten gibt es 2 Punkte, sobald wir deine Bestellung bestätigt haben. Tausche sie hier gegen Belohnungen.</p>
+    <div class="pawn-badge" style="background:#f1eafc;border-color:#cdbbef;color:#4a3a66">
+      <span>Dein Kontostand: <strong id="ptsBal">0</strong> ⭐ <small id="ptsPend"></small></span>
+    </div>
+  </div>
+</section>
+
+<main class="shop" id="shop">
+  <div class="filters" id="shopFilters">
+    <div class="chips" id="catChips" role="group" aria-label="Kategorie"></div>
+    <div class="chips" id="subChips" role="group" aria-label="Filter"></div>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <!-- Pfandhaus Grid -->
+  <div class="grid" id="pawnGrid" style="display:none"></div>
+  <div class="grid" id="ptsGrid" style="display:none"></div>
+</main>
+
+<footer>Nur für unsere Gruppe. Die Übergabe der Items findet auf dem Server statt.</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="Warenkorb" aria-hidden="true">
+  <header><h2>Warenkorb</h2><button class="x" id="closeCart" aria-label="Schließen">✕</button></header>
+  <div class="lines" id="lines"></div>
+  <div class="foot">
+    <div class="fee-row">
+      <span>Artikelpreis</span>
+      <span><span id="subTotal">0</span> 💎</span>
+    </div>
+    <div class="fee-row">
+      <span>Bearbeitungsgebühr (1💎 / Tool)</span>
+      <span>+<span id="feeTotal">0</span> 💎</span>
+    </div>
+    <div class="total"><span>Gesamt</span><strong><img data-tex="diamond" alt=""><span id="total">0</span></strong></div>
+    <button class="primary" id="checkout" disabled>Zur Bestellung</button>
+    <button class="ghost" id="clear">Warenkorb leeren</button>
+  </div>
+</aside>
+
+<dialog id="dlg">
+  <form class="dlg" id="orderForm" method="dialog" novalidate>
+    <div id="formView" style="display:grid;gap:14px">
+      <h2>Bestellung abschicken</h2>
+      <div class="sum-list" id="sumList"></div>
+      <div class="fee-row" style="font-size:14px;color:#5f7a68">
+        <span>Bearbeitungsgebühr</span>
+        <span id="dlgFee">+0 💎</span>
+      </div>
+      <div class="total"><span>Endsumme</span><strong><img data-tex="diamond" alt=""><span id="sumTotal">0</span></strong></div>
+      <div style="background:#f3f8f2;border:1px solid #cfe0d1;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+        <img id="dlgUserHead" style="width:28px;height:28px;border-radius:4px" src="" alt="">
+        <div>
+          <small style="color:#5f7a68;display:block;font-size:11px">Angemeldet als</small>
+          <strong id="dlgUserName" style="font-size:15px;color:#1f3a2a">Steve</strong>
+        </div>
+      </div>
+      <label>Kommentar <small>(optional, z. B. Übergabezeit)</small>
+        <textarea class="f" id="comment" maxlength="500"></textarea>
+      </label>
+      <div class="msg err" id="err" hidden></div>
+      <div class="row">
+        <button type="button" class="ghost" id="cancel">Zurück</button>
+        <button type="submit" class="primary" id="send">Bestellung senden</button>
+      </div>
+    </div>
+    <div class="success" id="okView" hidden>
+      <img data-tex="diamond" alt="">
+      <h2>Bestellung erfolgreich!</h2>
+      <p style="color:#5f7a68">Deine Bestellung ist im Discord angekommen. Halte deine Diamanten bereit!</p>
+      <button type="button" class="primary" id="done" style="width:100%">Super, danke!</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Admin Modal -->
+<dialog id="adminDlg">
+  <div class="dlg" style="max-height:85vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #cfe0d1;padding-bottom:10px">
+      <h2 style="margin:0;font-family:var(--pixel);font-size:18px">👑 Admin: Preise bearbeiten</h2>
+      <button class="x" id="closeAdmin">✕</button>
+    </div>
+
+    <!-- PIN View -->
+    <div id="adminPinView" style="display:grid;gap:12px;padding:12px 0">
+      <p style="margin:0;font-size:13px;color:#5f7a68">Bitte gib deinen geheimen Admin-PIN ein, um die Preise zu ändern:</p>
+      <input type="password" id="adminPin" class="f" placeholder="Secret PIN eingeben..." style="font-size:16px;letter-spacing:3px;text-align:center">
+      <div id="pinErr" class="msg err" hidden>Falscher PIN-Code!</div>
+      <button class="primary" id="checkPinBtn">Entsperren</button>
+    </div>
+
+    <!-- Editor View -->
+    <div id="adminEditorView" style="display:none;flex-direction:column;gap:10px;overflow:hidden;flex:1">
+      <div style="font-size:12px;color:#5f7a68;display:flex;justify-content:space-between;align-items:center">
+        <span>Preise ändern, Items ein- oder ausblenden und neue Items anlegen.</span>
+        <button id="resetPricesBtn" class="ghost" style="padding:4px 8px;font-size:11px">Auf Standard zurücksetzen</button>
+      </div>
+      <div class="nav-tabs" style="margin-left:0;width:fit-content">
+        <button type="button" class="tab-btn active" id="admTabShop">🛒 Shop-Preise</button>
+        <button type="button" class="tab-btn" id="admTabPawn">🏦 Ankaufspreise</button>
+        <button type="button" class="tab-btn" id="admTabNew">➕ Neues Item</button>
+        <button type="button" class="tab-btn" id="admTabPts">⭐ Punkte &amp; Aktionen</button>
+      </div>
+      <div id="adminItemsList" style="overflow-y:auto;max-height:50vh;display:grid;gap:8px;padding-right:4px"></div>
+      <div id="adminPawnList" style="overflow-y:auto;max-height:50vh;display:none;gap:8px;padding-right:4px"></div>
+      <div id="adminNewView" style="display:none;gap:10px;overflow-y:auto;max-height:50vh;padding-right:4px">
+        <label>Name <input id="newName" class="f" maxlength="40" placeholder="z. B. Diamantblock (x1)" autocomplete="off"></label>
+        <label>Bereich
+          <select id="newArea" class="f"><option value="shop">Shop (Verkauf)</option><option value="pawn">Pfandhaus (Ankauf)</option></select>
+        </label>
+        <label id="newCatRow">Kategorie
+          <select id="newCat" class="f"><option>Tools</option><option>Waffen</option><option>Rüstung</option><option>Redstone</option><option value="Baustoffe" selected>Baustoffe (Holz / Kisten / Eisen)</option></select>
+        </label>
+        <label>Preis in Diamanten <input id="newPrice" type="number" step="0.5" min="0.5" value="1" class="f"></label>
+        <label>Textur <small>(optional, z. B. diamond_block oder block/diamond_block)</small>
+          <input id="newTex" class="f" placeholder="diamond_block" autocomplete="off">
+        </label>
+        <div class="msg err" id="newErr" hidden></div>
+        <div class="msg ok" id="newOk" hidden></div>
+        <button type="button" class="primary" id="newAddBtn">Item hinzufügen</button>
+        <small style="color:#5f7a68">Danach unten auf „Preise speichern“ klicken, damit es für alle sichtbar wird.</small>
+      </div>
+      <div id="adminPtsView" style="display:none;gap:14px;overflow-y:auto;max-height:50vh;padding-right:4px">
+        <section style="display:grid;gap:8px;padding:10px;border:1px solid #cfe0d1;border-radius:10px;background:#fff7f0">
+          <b>🔥 Rabatt-Aktion auf Knopfdruck</b>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <input id="salePct" type="number" min="1" max="90" value="20" class="f" style="width:70px"> %
+            <select id="saleTarget" class="f" style="width:auto"><option value="Alle">auf alles</option><option>Tools</option><option>Waffen</option><option>Rüstung</option><option>Redstone</option><option value="Baustoffe">Baustoffe</option></select>
+            <select id="saleDur" class="f" style="width:auto"><option value="30">30 Min</option><option value="60" selected>1 Std</option><option value="180">3 Std</option><option value="1440">24 Std</option><option value="0">bis ich sie beende</option></select>
+          </div>
+          <div style="display:flex;gap:8px"><button type="button" class="primary" id="saleStart" style="padding:8px 14px">Aktion starten &amp; speichern</button><button type="button" class="ghost" id="saleStop">Beenden</button></div>
+          <small id="saleStatus" style="color:#5f7a68"></small>
+        </section>
+        <section style="display:grid;gap:8px">
+          <b>⭐ Punktestände <small style="font-weight:400;color:#5f7a68">(2 Punkte pro bestätigtem Diamant)</small></b>
+          <div id="ptsRows" style="display:grid;gap:6px"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;border:1px dashed #cfe0d1;border-radius:8px">
+            <select id="qcPlayer" class="f" style="width:auto"></select>
+            <input id="qcDiamonds" type="number" min="1" placeholder="bezahlte 💎" class="f" style="width:110px">
+            <button type="button" class="ghost" id="qcBtn">Gutschreiben (+2× ⭐)</button>
+            <select id="qrReward" class="f" style="width:auto"></select>
+            <button type="button" class="ghost" id="qrBtn">Einlösung abbuchen</button>
+          </div>
+          <div class="msg ok" id="ptsMsg" hidden></div>
+        </section>
+        <section style="display:grid;gap:6px">
+          <b>🎁 Belohnungen im Punkteshop</b>
+          <div id="rwRows" style="display:grid;gap:6px"></div>
+        </section>
+      </div>
+      <div class="msg err" id="admWarn" hidden></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="ghost" id="cancelAdmin">Schließen</button>
+        <button class="primary" id="savePricesBtn">Preise speichern</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="pawn-bar" id="pawnBar" hidden>
+  <span id="pawnSummary"></span>
+  <button class="primary sell-btn" id="pawnOpen" type="button">Ankauf abschließen</button>
+</div>
+
+<dialog id="pawnDlg">
+  <form class="dlg" id="pawnForm" method="dialog" novalidate>
+    <div id="pawnFormView" style="display:grid;gap:14px">
+      <h2>🏦 Ankauf abschicken</h2>
+      <div class="sum-list" id="pawnList"></div>
+      <div class="total"><span>Auszahlung</span><strong><img data-tex="diamond" alt=""><span id="pawnTotal">0</span></strong></div>
+      <div style="background:#fcf6ea;border:1px solid #e8cf9e;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b470d">
+        Die Diamanten bekommst du bei der Übergabe der Items auf dem Server.
+      </div>
+      <label>Kommentar <small>(optional, z. B. Übergabezeit)</small>
+        <textarea class="f" id="pawnComment" maxlength="500"></textarea>
+      </label>
+      <div class="msg err" id="pawnErr" hidden></div>
+      <div class="row">
+        <button type="button" class="ghost" id="pawnCancel">Zurück</button>
+        <button type="submit" class="primary sell-btn" id="pawnSend">Ankauf senden</button>
+      </div>
+    </div>
+    <div class="success" id="pawnOk" hidden>
+      <img data-tex="diamond" alt="">
+      <h2>Ankauf gesendet!</h2>
+      <p style="color:#5f7a68">Deine Anfrage ist im Discord angekommen. Bring die Items zur Übergabe mit.</p>
+      <button type="button" class="primary" id="pawnDone" style="width:100%">Super, danke!</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ====== Einstellungen ======
+const WEBHOOK_URL = 'https://discord.com/api/webhooks/1563558886240428145/LwsI6HC1jZuP9rpMbF7lS1vRFuYYjX7VAqUT28V73TECi1ejdFwnlRiRR9ZPdLOJ9Xtg';
+
+// Profilbild des Webhooks in Discord (öffentliche Bild-URL, am besten quadratisch). Zum Ändern einfach eine andere URL eintragen.
+const WEBHOOK_AVATAR = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.10/assets/minecraft/textures/item/diamond.png';
+
+// Webhook für den Pfandhaus-Ankauf (anderer Discord-Kanal). Hier die URL des zweiten Kanals eintragen.
+// Solange das Feld leer ist, geht der Ankauf an den normalen Bestell-Kanal.
+const PAWN_WEBHOOK_URL = '';
+// Optional: eigener Kanal für Punkte-Einlösungen (leer = Ankauf-Kanal bzw. Bestell-Kanal)
+const POINTS_WEBHOOK_URL = '';
+const isHook = u => /^https:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/api\/(?:v\d+\/)?webhooks\/\d+\/[\w-]+/.test((u||'').trim());
+
+// Geheimer PIN-Code für den Preis-Editor
+const ADMIN_PIN = '1337'; // ◄◄ Hier kannst du deinen Wunsch-PIN ändern!
+
+// Skin-Head URL mit automatischem Fallback
+// 2D Skin-Head URL (klassischer 2D Helm-Kopf wie im Spiel)
+function getHeadUrl(name, size=32){
+  const clean = encodeURIComponent((name||'Steve').trim());
+  return `https://cravatar.eu/helmavatar/${clean}/${size}`;
+}
+
+function setHeadImg(imgEl, name, size=32){
+  const clean = encodeURIComponent((name||'Steve').trim());
+  imgEl.onerror = () => {
+    imgEl.onerror = () => {
+      imgEl.src = `https://mc-heads.net/avatar/${clean}/${size}`;
+    };
+    imgEl.src = `https://minotar.net/helm/${clean}/${size}.png`;
+  };
+  imgEl.src = getHeadUrl(clean, size);
+}
+const WHITELIST = [
+  'Zebureki',
+  'Kermititfritte',
+  'Snakeonx',
+  'la_mossa',
+  'Ezpkapinew',
+  'Alex_6868'
+];
+
+// Vierstellige Spielerpasswörter (Name wie in der Whitelist → Passwort)
+const PASSWORDS = {
+  'Zebureki':'8340',
+  'Kermititfritte':'1884',
+  'Snakeonx':'7619',
+  'la_mossa':'8665',
+  'Ezpkapinew':'4048',
+  'Alex_6868':'4805'
+};
+const pinOk = (name, pin) => !!name && PASSWORDS[name] !== undefined && PASSWORDS[name] === String(pin||'').trim();
+let loginFails = 0, loginLockUntil = 0;
+
+let currentUser = null;
+
+// Cloud-Datenbank (JSONBin) für Live-Preise für ALLE Freunde
+const CLOUD_BIN_ID = '6adcd14fffd5d160538882dc';
+const CLOUD_API_KEY = '$2a$10$RZpqcWRWu92rA6AKoJ9p5ekbRNKou7VbhqveOOBnOVUz9WF1dzY3u';
+
+const TEX_SRC = [
+  'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.1/assets/minecraft/textures/',
+  'https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/',
+  'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/'
+];
+
+// Fallback Canvas-Renderer für alle Standard-Texturen
+const PAL = {
+  d:{a:'#c9fff7',b:'#4de8d8',c:'#1d9c97',o:'#0d3b40',s:'#9a6a35',t:'#6b4522'},
+  n:{a:'#7d7079',b:'#4b414a',c:'#2f282e',o:'#161216',s:'#9a6a35',t:'#6b4522'},
+  r:{a:'#ff8b80',b:'#e71d1d',c:'#9c0d0d',o:'#420000',s:'#5a5a5a',t:'#3a3a3a'},
+  iron:{a:'#ffffff',b:'#dcdcdc',c:'#a5a5a5',o:'#4a4a4a',s:'#9a6a35',t:'#6b4522'},
+  wood:{a:'#be9058',b:'#9c6f3b',c:'#734e26',o:'#3e260e',s:'#9c6f3b',t:'#734e26'},
+  bag:{a:'#d9954f',b:'#b0702f',c:'#7c4b1f',o:'#2e1b0c',s:'#b0702f',t:'#7c4b1f'}
+};
+
+function renderFallback(type, palKey='d'){
+  const cv=document.createElement('canvas'); cv.width=cv.height=16; const cx=cv.getContext('2d');
+  const p = PAL[palKey]||PAL.d;
+  cx.fillStyle = p.b; cx.fillRect(3,3,10,10);
+  cx.fillStyle = p.a; cx.fillRect(3,3,10,2); cx.fillRect(3,3,2,10);
+  cx.fillStyle = p.c; cx.fillRect(11,3,2,10); cx.fillRect(3,11,10,2);
+  return cv.toDataURL();
+}
+
+const REAL = {}, TRIED = {};
+function getTexUrl(path, n=0){ return TEX_SRC[n] + path + '.png'; }
+
+function loadTex(k, path, n=0){
+  const im = new Image(); im.referrerPolicy = 'no-referrer';
+  im.onload = ()=>{
+    REAL[k] = im.src;
+    document.querySelectorAll(`img[data-k="${k}"]`).forEach(i=>{ i.src = im.src; });
+  };
+  im.onerror = ()=>{
+    if(n+1 < TEX_SRC.length) loadTex(k, path, n+1);
+    else if(!REAL[k]) REAL[k] = renderFallback(k, k.includes('nether')?'n':k.includes('red')?'r':'d');
+  };
+  im.src = getTexUrl(path, n);
+}
+
+function ico(k, path){
+  if(REAL[k]) return REAL[k];
+  if(!TRIED[k]){
+    TRIED[k] = 1;
+    loadTex(k, path||('item/'+k));
+  }
+  return renderFallback(k, k.includes('nether')?'n':k.includes('red')?'r':'d');
+}
+
+// ====== Sortiment ======
+const ENCH = {'Effizienz V':4,'Haltbarkeit III':3,'Glück III':5,'Behutsamkeit':3,'Reparatur':6,'Schärfe V':4,'Plünderung III':4,'Schutz IV':5,'Atmung III':2,'Wasseraffinität':2,'Federfall IV':3,'Tiefenläufer III':3};
+const EXCL = {'Glück III':['Behutsamkeit'],'Behutsamkeit':['Glück III']};
+
+const ITEMS = [
+  // Diamant-Ausrüstung
+  {id:'diamond_pickaxe',tex:'item/diamond_pickaxe',name:'Diamant-Spitzhacke',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:10,rar:'Selten'},
+  {id:'diamond_axe',tex:'item/diamond_axe',name:'Diamant-Axt',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Schärfe V','Reparatur'],price:10,rar:'Selten'},
+  {id:'diamond_shovel',tex:'item/diamond_shovel',name:'Diamant-Schaufel',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:6,rar:'Selten'},
+  {id:'diamond_hoe',tex:'item/diamond_hoe',name:'Diamant-Hacke',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:6,rar:'Selten'},
+  {id:'diamond_sword',tex:'item/diamond_sword',name:'Diamant-Schwert',cat:'Waffen',tier:'d',ench:['Schärfe V','Plünderung III','Haltbarkeit III','Reparatur'],price:8,rar:'Selten'},
+  {id:'diamond_helmet',tex:'item/diamond_helmet',name:'Diamant-Helm',cat:'Rüstung',tier:'d',ench:['Schutz IV','Atmung III','Wasseraffinität','Haltbarkeit III','Reparatur'],price:14,rar:'Selten'},
+  {id:'diamond_chestplate',tex:'item/diamond_chestplate',name:'Diamant-Brustpanzer',cat:'Rüstung',tier:'d',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:22,rar:'Selten'},
+  {id:'diamond_leggings',tex:'item/diamond_leggings',name:'Diamant-Hose',cat:'Rüstung',tier:'d',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:18,rar:'Selten'},
+  {id:'diamond_boots',tex:'item/diamond_boots',name:'Diamant-Stiefel',cat:'Rüstung',tier:'d',ench:['Schutz IV','Federfall IV','Tiefenläufer III','Haltbarkeit III','Reparatur'],price:12,rar:'Selten'},
+
+  // Netherite-Ausrüstung
+  {id:'netherite_pickaxe',tex:'item/netherite_pickaxe',name:'Netherite-Spitzhacke',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:64,rar:'Episch'},
+  {id:'netherite_axe',tex:'item/netherite_axe',name:'Netherite-Axt',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Schärfe V','Reparatur'],price:64,rar:'Episch'},
+  {id:'netherite_shovel',tex:'item/netherite_shovel',name:'Netherite-Schaufel',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:48,rar:'Episch'},
+  {id:'netherite_hoe',tex:'item/netherite_hoe',name:'Netherite-Hacke',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:48,rar:'Episch'},
+  {id:'netherite_sword',tex:'item/netherite_sword',name:'Netherite-Schwert',cat:'Waffen',tier:'n',ench:['Schärfe V','Plünderung III','Haltbarkeit III','Reparatur'],price:72,rar:'Episch'},
+  {id:'netherite_helmet',tex:'item/netherite_helmet',name:'Netherite-Helm',cat:'Rüstung',tier:'n',ench:['Schutz IV','Atmung III','Wasseraffinität','Haltbarkeit III','Reparatur'],price:96,rar:'Episch'},
+  {id:'netherite_chestplate',tex:'item/netherite_chestplate',name:'Netherite-Brustpanzer',cat:'Rüstung',tier:'n',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:144,rar:'Episch'},
+  {id:'netherite_leggings',tex:'item/netherite_leggings',name:'Netherite-Hose',cat:'Rüstung',tier:'n',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:128,rar:'Episch'},
+  {id:'netherite_boots',tex:'item/netherite_boots',name:'Netherite-Stiefel',cat:'Rüstung',tier:'n',ench:['Schutz IV','Federfall IV','Tiefenläufer III','Haltbarkeit III','Reparatur'],price:80,rar:'Episch'},
+
+  // Redstone & Mechanik
+  {id:'redstone_dust',tex:'item/redstone',name:'Redstone-Staub (x64)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'redstone_block',tex:'block/redstone_block',name:'Redstone-Block (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'redstone_torch',tex:'item/redstone_torch',name:'Redstone-Fackel (x16)',cat:'Redstone',tier:'r',ench:[],price:1,rar:'Redstone'},
+  {id:'repeater',tex:'item/repeater',name:'Redstone-Verstärker (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'comparator',tex:'item/comparator',name:'Redstone-Komparator (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'piston',tex:'block/piston_top_sticky',name:'Kolben (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'sticky_piston',tex:'block/piston_top_sticky',name:'Klebriger Kolben (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'observer',tex:'block/observer_front',name:'Beobachter (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'dispenser',tex:'block/dispenser_front',name:'Werfer (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'dropper',tex:'block/dropper_front',name:'Spender (x8)',cat:'Redstone',tier:'r',ench:[],price:1,rar:'Redstone'},
+  {id:'target',tex:'block/target_top',name:'Zielblock (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+
+  // Kisten, Hopper, Eisen & Holz
+  {id:'chest',tex:'item/chest',name:'Kiste (x4)',cat:'Baustoffe',tier:'b',ench:[],price:1,rar:'Alltag'},
+  {id:'trapped_chest',tex:'item/trapped_chest',name:'Redstone-Kiste (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'barrel',tex:'block/barrel_top',name:'Fass (x4)',cat:'Baustoffe',tier:'b',ench:[],price:1,rar:'Alltag'},
+  {id:'hopper',tex:'item/hopper',name:'Trichter / Hopper',cat:'Baustoffe',tier:'b',ench:[],price:1,minQty:1,rar:'Mechanik'},
+  {id:'iron_ingot',tex:'item/iron_ingot',name:'Eisenbarren (x16)',cat:'Baustoffe',tier:'b',ench:[],price:2,rar:'Ressource'},
+  {id:'iron_block',tex:'block/iron_block',name:'Eisenblock (x2)',cat:'Baustoffe',tier:'b',ench:[],price:2,rar:'Ressource'},
+  {id:'oak_log',tex:'block/oak_log',name:'Eichenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'spruce_log',tex:'block/spruce_log',name:'Fichtenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'dark_oak_log',tex:'block/dark_oak_log',name:'Schwarzeichenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'cherry_log',tex:'block/cherry_log',name:'Kirschholzstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'}
+];
+
+// Pfandhaus (Ankauf): Für diese Ressourcen zahlen wir Diamanten. Preise kannst du im Admin-Editor ändern.
+const PAWN = [   // [Schlüssel, Name, Textur, Ankaufspreis, passender Shop-Artikel (für die Gewinnkontrolle)]
+  ['coal','Kohle (x64)','item/coal',1],['copper','Kupferbarren (x32)','item/copper_ingot',1],
+  ['iron','Eisenbarren (x16)','item/iron_ingot',1,'iron_ingot'],['gold','Goldbarren (x16)','item/gold_ingot',2],
+  ['redstone','Redstone-Staub (x64)','item/redstone',1,'redstone_dust'],['lapis','Lapislazuli (x32)','item/lapis_lazuli',1],
+  ['quartz','Netherquarz (x32)','item/quartz',1],['emerald','Smaragd (x8)','item/emerald',2],
+  ['diamond','Diamant (x4)','item/diamond',3],['scrap','Netherit-Schrott (x2)','item/netherite_scrap',4],
+  ['oak','Eichenstamm (x64)','block/oak_log',1.5,'oak_log'],['spruce','Fichtenstamm (x64)','block/spruce_log',1.5,'spruce_log']
+];
+PAWN.forEach(([k,n,tex,price,pair])=>ITEMS.push({id:'pawn_'+k,tex,name:n,cat:'Pfand',tier:'p',ench:[],price,rar:'Ankauf',pawn:true,pair}));
+
+const BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+
+// ===== Punkte & Aktionen =====
+const EARN = 2;     // Punkte pro ausgegebenem Diamanten (nach Bestätigung durch den Admin)
+const MIN_PPV = 6;  // Mindest-Punktekosten pro Diamant Warenwert (Gewinn-Schutz: Spieler muss >= 3x den Wert ausgeben)
+const DEF_PPV = 8;  // Standard: 8 Punkte pro Diamant Warenwert, also gibt der Spieler 4x den Wert aus
+const REWARD_IDS = ['iron_ingot','redstone_dust','oak_log','chest','hopper','diamond_sword','diamond_pickaxe','netherite_sword'];
+let POINTS = {}, REWARD_CFG = {}, SALE = null;
+const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
+const saleActive = () => !!(SALE && SALE.pct > 0 && (!SALE.endsAt || SALE.endsAt > Date.now()));
+const saleApplies = i => saleActive() && !i.pawn && (SALE.target === 'Alle' || SALE.target === i.cat);
+function salePrice(i){
+  if(!saleApplies(i)) return i.price;
+  let p = Math.max(0.5, Math.ceil(i.price * (1 - SALE.pct/100) * 2) / 2);
+  ITEMS.forEach(x=>{ if(x.pair === i.id) p = Math.max(p, x.price + 0.5); });   // nie unter den Ankaufspreis
+  return Math.min(p, i.price);
+}
+const rewardCost = id => { const c = REWARD_CFG[id]; return (c && c.cost > 0) ? c.cost : Math.ceil(BY_ID[id].price * DEF_PPV); };
+const rewardActive = id => BY_ID[id] && !BY_ID[id].hidden && !(REWARD_CFG[id] && REWARD_CFG[id].active === false);
+
+// Sortiment-Änderungen aus dem Admin-Menü: ausgeblendete und selbst angelegte Items
+function applyCatalog(map){
+  if(!map || typeof map !== 'object') return;
+  POINTS = isObj(map.__points) ? map.__points : {};
+  REWARD_CFG = isObj(map.__rewards) ? map.__rewards : {};
+  SALE = (isObj(map.__sale) && map.__sale.pct > 0) ? map.__sale : null;
+  const hidden = new Set(Array.isArray(map.__hidden) ? map.__hidden : []);
+  for(let i = ITEMS.length-1; i >= 0; i--){
+    if(ITEMS[i].custom){ delete BY_ID[ITEMS[i].id]; ITEMS.splice(i,1); }
+  }
+  (Array.isArray(map.__custom) ? map.__custom : []).forEach(c=>{
+    if(!c || !c.id || BY_ID[c.id]) return;
+    const pawn = !!c.pawn, price = Number(c.price) > 0 ? Number(c.price) : 1;
+    const it = {id:String(c.id), tex:c.tex || ('item/'+c.id), name:String(c.name||'Neues Item').slice(0,60),
+      cat: pawn ? 'Pfand' : (c.cat || 'Baustoffe'), tier: pawn ? 'p' : 'b', ench:[], price,
+      rar: pawn ? 'Ankauf' : 'Eigenes Item', custom:true, pawn};
+    ITEMS.push(it); BY_ID[it.id] = it;
+  });
+  ITEMS.forEach(i=>{ i.hidden = hidden.has(i.id); });
+}
+// Entfernt Waren aus Warenkorb und Ankauf-Liste, die ausgeblendet oder gelöscht wurden
+function pruneCarts(){
+  Object.entries(state.cart).forEach(([k,l])=>{ const it = BY_ID[l.id]; if(!it || it.hidden) delete state.cart[k]; });
+  Object.keys(state.sell).forEach(id=>{ const it = BY_ID[id]; if(!it || it.hidden) delete state.sell[id]; });
+}
+
+// Gespeicherte Custom-Preise (zuerst lokal, dann aus der Cloud laden)
+function applyPriceMap(map){
+  if(!map || typeof map !== 'object') return;
+  Object.entries(map).forEach(([id, price])=>{
+    if(BY_ID[id] && typeof price === 'number' && price > 0) BY_ID[id].price = price;
+  });
+}
+
+try {
+  const lm = JSON.parse(localStorage.getItem('alexshop_custom_prices')||'{}');
+  applyCatalog(lm); applyPriceMap(lm);
+} catch(e) {}
+
+// Live aus der Cloud laden
+async function syncPricesFromCloud(){
+  if(!CLOUD_BIN_ID || !CLOUD_API_KEY) return;
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': CLOUD_API_KEY }
+    });
+    if(res.ok){
+      const data = await res.json();
+      if(data && data.record){
+        applyCatalog(data.record);
+        applyPriceMap(data.record);
+        pruneCarts();
+        try { localStorage.setItem('alexshop_custom_prices', JSON.stringify(data.record)); } catch(e){}
+        renderGrid(); renderPawn(); renderCart(); updatePtsChip(); renderPts(); tickSale();
+      }
+    }
+  } catch(err) {
+    console.warn('Cloud-Preise konnten nicht geladen werden, verwende lokale/Standard-Preise', err);
+  }
+}
+
+// Preisfindung: Grundpreis + Verzauberungen (ohne Gebühr)
+const baseUnit = (id,ens=[]) => salePrice(BY_ID[id]) + ens.reduce((s,e)=>s+(ENCH[e]||0),0);
+
+// Gebühr: 1 Diamant pro Stück NUR bei Werkzeugen (Tools)
+const itemFee = id => (BY_ID[id] && BY_ID[id].cat === 'Tools') ? 1 : 0;
+
+const state = {cat:'Alle', sub:'Alle', qty:{}, sel:{}, cart:{}, page:'shop', pqty:{}, sell:{}};
+const $ = s => document.querySelector(s);
+const nf = n => n.toLocaleString('de-DE');
+const sanitize = (v, min=1) => Math.max(min, Math.floor(Number(v)) || min);
+const ensOf = id => state.sel[id] || [];
+
+function applyStaticTex(){
+  document.querySelectorAll('img[data-tex="diamond"]').forEach(img => {
+    img.src = ico('diamond','item/diamond');
+    img.dataset.k = 'diamond';
+  });
+  document.querySelectorAll('img[data-tex="bundle"]').forEach(img => {
+    img.src = ico('bundle','item/bundle');
+    img.dataset.k = 'bundle';
+  });
+}
+
+// ====== Filter Chips ======
+function renderFilters(){
+  const cats = [['Alle','Alle'],['Tools','Tools'],['Waffen','Waffen'],['Rüstung','Rüstung'],['Redstone','Redstone'],['Baustoffe','Holz / Kisten / Eisen']];
+  $('#catChips').innerHTML = cats.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${state.cat===v}">${l}</button>`).join('');
+  $('#catChips').onclick = e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    state.cat = b.dataset.v; renderFilters(); renderGrid();
+  };
+}
+
+// ====== Shop Raster ======
+function priceHtml(i){
+  const ens = ensOf(i.id), sp = salePrice(i), extra = baseUnit(i.id,ens) - sp;
+  let pStr = (baseUnit(i.id,ens) === 0.5) ? '0,5' : nf(baseUnit(i.id,ens));
+  if(sp < i.price) pStr = `<s style="opacity:.55;font-weight:500">${nf(i.price + extra)}</s> ${pStr}`;
+  const minNote = i.minQty ? ` • Min. ${i.minQty} Stk.` : '';
+  const feeInfo = i.cat === 'Tools' ? ' (+1💎 Gebühr)' : '';
+  return `<img data-k="diamond" src="${ico('diamond','item/diamond')}" alt="">${pStr} Diamanten` +
+    (extra ? `<small>Grundpreis ${sp===0.5?'0,5':nf(sp)} + Verzauberung ${nf(extra)}${feeInfo}${minNote}</small>` : `<small>${i.cat==='Tools'?'+1💎 Bearbeitungsgebühr':'Ohne Zusatzgebühr'}${minNote}</small>`);
+}
+
+function renderGrid(){
+  const list = ITEMS.filter(i=>!i.pawn&&!i.hidden&&(state.cat==='Alle'||i.cat===state.cat));
+  $('#count').textContent = list.length + (list.length===1?' Item':' Items');
+  
+  $('#grid').innerHTML = list.map(i=>{
+    const min = i.minQty || 1;
+    const q = state.qty[i.id] || min;
+    const ens = ensOf(i.id);
+    return `<article class="card ${i.tier}" data-id="${i.id}">
+      <div class="art"><span class="rar ${i.tier==='d'?'rare':i.tier==='n'?'epic':i.tier==='r'?'red':''}">${i.rar}</span>
+        <img data-k="${i.id}" src="${ico(i.id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body">
+        <h3>${i.name}</h3>
+        ${i.tier==='n'?'<p class="note">Feuerfest, verbrennt nicht in Lava.</p>':''}
+        ${i.minQty ? `<p class="note" style="color:var(--diamond-deep);font-weight:600">⚡ Mindestbestellmenge: ${i.minQty} Stück</p>` : ''}
+        ${i.ench.length ? `
+        <details class="opt"${ens.length?' open':''}>
+          <summary>Verzauberungen <small>(optional)</small></summary>
+          ${i.ench.map(e=>`<label class="eo"><input type="checkbox" data-e="${e}"${ens.includes(e)?' checked':''}><span>${e}</span><em>+${ENCH[e]}</em></label>`).join('')}
+        </details>` : ''}
+        <div class="price">${priceHtml(i)}</div>
+        <div class="quick-qty" aria-label="Schnellauswahl Menge">
+          <span style="font-size:11px;color:#5f7a68;font-weight:600">Menge:</span>
+          <button type="button" class="qbtn ${q===1?'active':''}" data-setq="1">1</button>
+          <button type="button" class="qbtn ${q===16?'active':''}" data-setq="16">16</button>
+          <button type="button" class="qbtn ${q===32?'active':''}" data-setq="32">32</button>
+          <button type="button" class="qbtn ${q===64?'active':''}" data-setq="64">64</button>
+        </div>
+        <div class="buy">
+          <div class="qty">
+            <button type="button" data-act="minus" aria-label="Weniger">−</button>
+            <input type="number" min="${min}" step="1" inputmode="numeric" value="${q}" aria-label="Menge ${i.name}">
+            <button type="button" data-act="plus" aria-label="Mehr">+</button>
+          </div>
+          <button type="button" class="add" data-act="add">In den Warenkorb</button>
+        </div>
+      </div></article>`;
+  }).join('');
+}
+
+// Particle Flight Animation zum Warenkorb
+function flyToCart(startEl, imgSrc){
+  const cartBtn = $('#openCart');
+  const startRect = startEl.getBoundingClientRect();
+  const endRect = cartBtn.getBoundingClientRect();
+
+  const particle = document.createElement('img');
+  particle.src = imgSrc;
+  particle.className = 'flying-particle';
+  particle.style.left = startRect.left + (startRect.width/2 - 18) + 'px';
+  particle.style.top = startRect.top + (startRect.height/2 - 18) + 'px';
+  document.body.appendChild(particle);
+
+  requestAnimationFrame(()=>{
+    particle.style.left = endRect.left + (endRect.width/2 - 18) + 'px';
+    particle.style.top = endRect.top + (endRect.height/2 - 18) + 'px';
+    particle.style.transform = 'scale(0.3) rotate(360deg)';
+    particle.style.opacity = '0.3';
+  });
+
+  setTimeout(()=>{ particle.remove(); }, 600);
+}
+
+$('#grid').addEventListener('click',e=>{
+  const qBtn = e.target.closest('button[data-setq]');
+  if(qBtn){
+    const card = qBtn.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+    const item = BY_ID[id];
+    const min = item.minQty || 1;
+    const targetQ = Math.max(min, parseInt(qBtn.dataset.setq) || 1);
+    inp.value = targetQ; state.qty[id] = targetQ;
+    card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', b === qBtn));
+    return;
+  }
+
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+  const item = BY_ID[id];
+  const min = item.minQty || 1;
+  let q = sanitize(inp.value, min);
+  if(b.dataset.act==='plus') q++;
+  if(b.dataset.act==='minus') q = Math.max(min, q-1);
+  inp.value = q; state.qty[id] = q;
+  card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.setq) === q));
+
+  if(b.dataset.act==='add'){
+    if(q < min){
+      toast(`⚠️ Mindestbestellmenge für ${item.name}: ${min} Stück!`);
+      q = min; inp.value = min;
+      return;
+    }
+    const ens = ensOf(id).slice(), key = id+'|'+ens.join(',');
+    state.cart[key] = {id, ens, q:(state.cart[key]?state.cart[key].q:0)+q};
+    state.qty[id] = min; inp.value = min;
+    
+    // Animation
+    b.classList.add('done'); b.textContent = 'Hinzugefügt ✓';
+    setTimeout(()=>{ b.classList.remove('done'); b.textContent='In den Warenkorb'; },1100);
+    
+    const cardImg = card.querySelector('.art img');
+    flyToCart(cardImg, cardImg.src);
+
+    renderCart(true);
+    const feeTxt = itemFee(id) > 0 ? ` (+${q}💎 Gebühr)` : '';
+    toast(`💎 ${q}× ${BY_ID[id].name}${feeTxt} im Warenkorb`);
+  }
+});
+
+$('#grid').addEventListener('change',e=>{
+  const card = e.target.closest('.card'); if(!card) return;
+  const id = card.dataset.id, i = BY_ID[id];
+  const min = i.minQty || 1;
+  if(e.target.matches('input[type=number]')){
+    const q = sanitize(e.target.value, min); e.target.value = q; state.qty[id] = q;
+    card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.setq) === q));
+  }
+  if(e.target.matches('input[data-e]')){
+    const s = new Set(ensOf(id)), en = e.target.dataset.e;
+    if(e.target.checked){ s.add(en); (EXCL[en]||[]).forEach(x=>s.delete(x)); } else s.delete(en);
+    state.sel[id] = i.ench.filter(x=>s.has(x));
+    card.querySelectorAll('input[data-e]').forEach(c=>{ c.checked = s.has(c.dataset.e); });
+    card.querySelector('.price').innerHTML = priceHtml(i);
+  }
+});
+
+// ====== Warenkorb Logik ======
+const lineName = l => BY_ID[l.id].name + (l.ens.length ? ' ('+l.ens.join(', ')+')' : '');
+const cartItemCount = () => Object.values(state.cart).reduce((s,l)=>s+l.q,0);
+const cartToolCount = () => Object.values(state.cart).reduce((s,l)=>s + (itemFee(l.id) ? l.q : 0), 0);
+const cartSubTotal = () => Object.values(state.cart).reduce((s,l)=>s+baseUnit(l.id,l.ens)*l.q,0);
+const cartFeeTotal = () => Object.values(state.cart).reduce((s,l)=>s + (itemFee(l.id) * l.q), 0);
+const cartTotal = () => cartSubTotal() + cartFeeTotal();
+
+function renderCart(bump){
+  const lines = Object.entries(state.cart);
+  const totalCount = cartItemCount();
+  const badge = $('#badge'); badge.textContent = nf(totalCount);
+  if(bump){ badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump'); }
+
+  $('#subTotal').textContent = Number.isInteger(cartSubTotal()) ? nf(cartSubTotal()) : cartSubTotal().toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+  $('#feeTotal').textContent = nf(cartFeeTotal());
+  const cTot = cartTotal();
+  $('#total').textContent = Number.isInteger(cTot) ? nf(cTot) : cTot.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+  $('#checkout').disabled = !lines.length;
+
+  $('#lines').innerHTML = lines.length ? lines.map(([key,l])=>{
+    const u = baseUnit(l.id,l.ens);
+    const lineFee = itemFee(l.id) * l.q;
+    const uStr = (u === 0.5) ? '0,5' : nf(u);
+    const sumVal = u*l.q + lineFee;
+    const sumStr = Number.isInteger(sumVal) ? nf(sumVal) : sumVal.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+    const feeSub = lineFee > 0 ? ` (+${lineFee}💎 Gebühr)` : '';
+    return `<div class="line"><img data-k="${l.id}" src="${ico(l.id, BY_ID[l.id].tex)}" alt="">
+      <div>
+        <b>${BY_ID[l.id].name}</b>
+        <small>${l.ens.length?l.ens.join(', '):'Standard / unverzaubert'}</small>
+        <small>${l.q} × ${uStr}💎${feeSub}</small>
+      </div>
+      <div class="sum">
+        <span>${sumStr} 💎</span>
+        <button class="rm" data-rm="${key}">Entfernen</button>
+      </div></div>`;
+  }).join('') : `<div class="empty"><img data-k="bundle" src="${ico('bundle','item/bundle')}" alt=""><p>Dein Warenkorb ist leer.<br>Wähl im Sortiment ein Item aus.</p></div>`;
+}
+
+$('#lines').addEventListener('click',e=>{
+  const key = e.target.dataset.rm; if(key){ delete state.cart[key]; renderCart(); }
+});
+$('#clear').onclick = ()=>{ state.cart = {}; renderCart(); };
+
+const drawer = (on)=>{
+  $('#drawer').classList.toggle('on',on);
+  $('#overlay').classList.toggle('on',on);
+  $('#drawer').setAttribute('aria-hidden',!on);
+};
+$('#openCart').onclick = ()=>drawer(true);
+$('#closeCart').onclick = $('#overlay').onclick = ()=>drawer(false);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') drawer(false); });
+
+let tt;
+function toast(t){
+  const el=$('#toast'); el.textContent=t; el.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('on'),2200);
+}
+
+// ====== Checkout Dialog ======
+const dlg = $('#dlg');
+$('#checkout').onclick = ()=>{
+  $('#sumList').innerHTML = Object.values(state.cart).map(l=>{
+    const u = baseUnit(l.id,l.ens);
+    const sub = u * l.q;
+    const subStr = Number.isInteger(sub) ? nf(sub) : sub.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+    return `<div><span>${l.q}× ${lineName(l)}</span><span>${subStr} 💎</span></div>`;
+  }).join('');
+
+  $('#dlgFee').textContent = `+${nf(cartFeeTotal())} 💎 (${cartToolCount()} Tools)`;
+  const tot = cartTotal();
+  $('#sumTotal').textContent = Number.isInteger(tot) ? nf(tot) : tot.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+  
+  $('#dlgUserName').textContent = currentUser || 'Unbekannt';
+  setHeadImg($('#dlgUserHead'), currentUser || 'Steve', 32);
+
+  $('#err').hidden = true; $('#formView').hidden = false; $('#okView').hidden = true;
+  dlg.showModal();
+};
+$('#cancel').onclick = ()=>dlg.close();
+$('#done').onclick = ()=>{ dlg.close(); drawer(false); };
+
+$('#orderForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const err = $('#err'), btn = $('#send');
+  err.hidden = true;
+
+  const player = currentUser;
+  if(!player){
+    err.textContent = 'Du bist nicht angemeldet!';
+    err.hidden = false; return;
+  }
+
+  const lines = Object.values(state.cart);
+  if(!lines.length){ err.textContent = 'Der Warenkorb ist leer.'; err.hidden = false; return; }
+
+  const comment = $('#comment').value.trim();
+  const text = lines.map(l=>{
+    const u = baseUnit(l.id,l.ens);
+    return `**${l.q}×** ${BY_ID[l.id].name}${l.ens.length?'\n> '+l.ens.join(', '):''}\n> Einzelpreis: ${nf(u)} 💎 | Teilsumme: ${nf(u*l.q)} 💎`;
+  }).join('\n\n');
+
+  const feeNote = cartFeeTotal() > 0 ? `\n\n📌 **Bearbeitungsgebühr:** +${nf(cartFeeTotal())} 💎 (${cartToolCount()} Tools)` : '\n\n📌 **Bearbeitungsgebühr:** Keine (keine Tools in Bestellung)';
+
+  const embed = {
+    title:'🛒 Neue Shop-Bestellung',
+    color:0x4de8d8,
+    description: (text + feeNote).slice(0,4000),
+    fields:[
+      {name:'👤 Spieler', value:`\`${player}\``, inline:true},
+      {name:'💎 Endbetrag inkl. Gebühr', value:`**${Number.isInteger(cartTotal())?nf(cartTotal()):cartTotal().toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} Diamanten**`, inline:true},
+      {name:'⭐ Punkte nach Bestätigung', value:`+${nf(Math.floor(cartTotal()*EARN))}`, inline:true},
+      ...(saleActive()?[{name:'🔥 Aktion', value:`−${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}`, inline:true}]:[]),
+      ...(comment?[{name:'💬 Kommentar', value:comment.slice(0,1000)}]:[])
+    ],
+    footer:{text:'Alexshop • 1💎 Bearbeitungsgebühr nur auf Tools'},
+    timestamp:new Date().toISOString()
+  };
+
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  try{
+    const res = await fetch(WEBHOOK_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})
+    });
+
+    if(!res.ok) throw new Error('Discord antwortete mit Status '+res.status);
+
+    state.cart = {}; renderCart();
+    $('#comment').value='';
+    $('#formView').hidden = true; $('#okView').hidden = false;
+  }catch(ex){
+    err.textContent = 'Fehler beim Senden: '+ex.message;
+    err.hidden = false;
+  }finally{
+    btn.disabled = false; btn.textContent = 'Bestellung senden';
+  }
+});
+
+// ====== Pfandhaus (Ankauf) ======
+const pf = n => Number.isInteger(n) ? nf(n) : n.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+const sellTotal = () => Object.entries(state.sell).reduce((s,[id,q])=>s+BY_ID[id].price*q,0);
+const sellCount = () => Object.values(state.sell).reduce((s,q)=>s+q,0);
+
+function switchPage(page){
+  state.page = page;
+  const sh = page === 'shop', pw = page === 'pawn', pt = page === 'pts';
+  $('#tabShop').classList.toggle('active', sh);
+  $('#tabPawn').classList.toggle('active', pw);
+  $('#tabPts').classList.toggle('active', pt);
+  $('#heroShop').style.display = sh ? '' : 'none';
+  $('#heroPawn').style.display = pw ? '' : 'none';
+  $('#heroPts').style.display = pt ? '' : 'none';
+  $('#shopFilters').style.display = sh ? '' : 'none';
+  $('#grid').style.display = sh ? '' : 'none';
+  $('#pawnGrid').style.display = pw ? '' : 'none';
+  $('#ptsGrid').style.display = pt ? '' : 'none';
+  renderPawn(); renderPts(); updatePawnBar();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ===== Punkteshop =====
+const PEND_KEY = 'alexshop_pts_pending';
+const myPoints = () => (currentUser && POINTS[currentUser]) || 0;
+// Offene Einlösungen (lokal gemerkt): verfallen, sobald der Admin den Kontostand ändert oder nach 24 Std.
+function pendList(){
+  try{ const all = JSON.parse(localStorage.getItem(PEND_KEY)||'{}');
+    return (all[currentUser]||[]).filter(r=>r.bal === myPoints() && Date.now()-r.ts < 864e5); }catch(e){ return []; }
+}
+function pendAdd(cost){
+  try{ const all = JSON.parse(localStorage.getItem(PEND_KEY)||'{}');
+    (all[currentUser] = all[currentUser] || []).push({cost, bal:myPoints(), ts:Date.now()});
+    localStorage.setItem(PEND_KEY, JSON.stringify(all)); }catch(e){}
+}
+const ptsAvailable = () => Math.max(0, myPoints() - pendList().reduce((t,r)=>t+r.cost,0));
+function updatePtsChip(){ $('#myPts').textContent = '⭐ ' + nf(myPoints()); }
+function renderPts(){
+  const avail = ptsAvailable(), pend = myPoints() - avail;
+  $('#ptsBal').textContent = nf(avail);
+  $('#ptsPend').textContent = pend > 0 ? `(${nf(pend)} ⭐ warten auf Abbuchung)` : '';
+  $('#ptsGrid').innerHTML = REWARD_IDS.filter(rewardActive).map(id=>{
+    const i = BY_ID[id], c = rewardCost(id), can = avail >= c;
+    return `<article class="card sell-card" data-id="${id}">
+      <div class="art"><span class="rar sell">${nf(c)} ⭐</span><img data-k="${id}" src="${ico(id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body"><h3>${i.name}</h3>
+        <div class="price">⭐ ${nf(c)} Punkte<small>${can ? 'Du kannst das einlösen' : 'Dir fehlen noch '+nf(c-avail)+' Punkte'}</small></div>
+        <button type="button" class="add pts-btn" data-redeem="${id}"${can?'':' disabled'}>${can?'Einlösen':'Zu wenig Punkte'}</button>
+      </div></article>`;
+  }).join('') || '<p style="grid-column:1/-1">Aktuell gibt es keine Belohnungen.</p>';
+}
+$('#ptsGrid').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-redeem]'); if(!b || b.disabled) return;
+  const id = b.dataset.redeem, cost = rewardCost(id);
+  if(!currentUser || ptsAvailable() < cost) return;
+  if(!confirm(`${BY_ID[id].name} für ${nf(cost)} Punkte einlösen?`)) return;
+  b.disabled = true; b.textContent = 'Wird gesendet …';
+  const hook = isHook(POINTS_WEBHOOK_URL) ? POINTS_WEBHOOK_URL.trim() : (isHook(PAWN_WEBHOOK_URL) ? PAWN_WEBHOOK_URL.trim() : WEBHOOK_URL);
+  const embed = {
+    title:'⭐ Neue Punkte-Einlösung', color:0x7c5cc4,
+    description:`**${BY_ID[id].name}**\n> Kosten: ${nf(cost)} ⭐\n\nBitte im Admin-Menü unter „Punkte & Aktionen“ abbuchen.`,
+    fields:[{name:'👤 Spieler', value:`\`${currentUser}\``, inline:true},{name:'⭐ Kontostand', value:`${nf(myPoints())}`, inline:true}],
+    footer:{text:'Alexshop • Punkteshop'}, timestamp:new Date().toISOString()
+  };
+  try{
+    const res = await fetch(hook,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop Punkteshop',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})});
+    if(!res.ok) throw new Error('Status '+res.status);
+    pendAdd(cost); toast('⭐ Einlösung gesendet! Du bekommst die Belohnung bei der Übergabe.');
+  }catch(ex){ toast('⚠️ Senden fehlgeschlagen: '+ex.message); }
+  renderPts();
+});
+
+// ===== Rabatt-Banner =====
+let wasSale = false;
+function tickSale(){
+  const b = $('#saleBanner'), on = saleActive();
+  if(on){
+    const rem = SALE.endsAt ? Math.max(0, SALE.endsAt - Date.now()) : 0, sec = Math.floor(rem/1000);
+    const t = SALE.endsAt ? ` · endet in ${Math.floor(sec/3600)}:${String(Math.floor(sec%3600/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}` : '';
+    b.textContent = `🔥 AKTION: −${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}${t}`;
+    b.hidden = false;
+  } else b.hidden = true;
+  if(on !== wasSale){ wasSale = on; renderGrid(); renderCart(); }
+}
+
+function renderPawn(){
+  $('#pawnGrid').innerHTML = ITEMS.filter(i=>i.pawn&&!i.hidden).map(i=>{
+    const q = state.pqty[i.id] || 1;
+    return `<article class="card sell-card" data-id="${i.id}">
+      <div class="art"><span class="rar sell">Ankauf</span>
+        <img data-k="${i.id}" src="${ico(i.id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body">
+        <h3>${i.name}</h3>
+        <div class="price"><img data-k="diamond" src="${ico('diamond','item/diamond')}" alt="">${pf(i.price)} Diamanten<small>Auszahlung bei Übergabe auf dem Server</small></div>
+        <div class="buy">
+          <div class="qty">
+            <button type="button" data-act="minus" aria-label="Weniger">−</button>
+            <input type="number" min="1" step="1" inputmode="numeric" value="${q}" aria-label="Menge ${i.name}">
+            <button type="button" data-act="plus" aria-label="Mehr">+</button>
+          </div>
+          <button type="button" class="add sell-btn" data-act="sell">Verkaufen</button>
+        </div>
+      </div></article>`;
+  }).join('');
+}
+
+function updatePawnBar(){
+  const n = sellCount();
+  $('#pawnBar').hidden = !(state.page === 'pawn' && n > 0);
+  $('#pawnSummary').textContent = `${nf(n)} Packungen · Auszahlung ${pf(sellTotal())} 💎`;
+}
+
+$('#pawnGrid').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+  let q = sanitize(inp.value, 1);
+  if(b.dataset.act === 'plus') q++;
+  if(b.dataset.act === 'minus') q = Math.max(1, q-1);
+  inp.value = q; state.pqty[id] = q;
+  if(b.dataset.act === 'sell'){
+    state.sell[id] = (state.sell[id] || 0) + q;
+    state.pqty[id] = 1; inp.value = 1;
+    b.classList.add('done'); b.textContent = 'Hinzugefügt ✓';
+    setTimeout(()=>{ b.classList.remove('done'); b.textContent = 'Verkaufen'; }, 1100);
+    updatePawnBar();
+    toast(`🏦 ${q}× ${BY_ID[id].name} zum Ankauf vorgemerkt`);
+  }
+});
+$('#pawnGrid').addEventListener('change', e=>{
+  if(e.target.matches('input[type=number]')){
+    const q = sanitize(e.target.value, 1); e.target.value = q;
+    state.pqty[e.target.closest('.card').dataset.id] = q;
+  }
+});
+
+const pawnDlg = $('#pawnDlg');
+function renderPawnList(){
+  $('#pawnList').innerHTML = Object.entries(state.sell).map(([id,q])=>
+    `<div><span>${q}× ${BY_ID[id].name}</span><span>${pf(BY_ID[id].price*q)} 💎 <button type="button" class="rm" data-prm="${id}">Entfernen</button></span></div>`).join('');
+  $('#pawnTotal').textContent = pf(sellTotal());
+  if(!sellCount()){ pawnDlg.close(); }
+  updatePawnBar();
+}
+$('#pawnList').addEventListener('click', e=>{
+  const id = e.target.dataset.prm; if(id){ delete state.sell[id]; renderPawnList(); }
+});
+$('#pawnOpen').onclick = ()=>{
+  $('#pawnErr').hidden = true; $('#pawnFormView').hidden = false; $('#pawnOk').hidden = true;
+  renderPawnList();
+  if(sellCount()) pawnDlg.showModal();
+};
+$('#pawnCancel').onclick = ()=>pawnDlg.close();
+$('#pawnDone').onclick = ()=>pawnDlg.close();
+
+$('#pawnForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const err = $('#pawnErr'), btn = $('#pawnSend');
+  err.hidden = true;
+  if(!currentUser){ err.textContent = 'Du bist nicht angemeldet!'; err.hidden = false; return; }
+  const entries = Object.entries(state.sell);
+  if(!entries.length){ err.textContent = 'Die Ankauf-Liste ist leer.'; err.hidden = false; return; }
+  const comment = $('#pawnComment').value.trim();
+  const text = entries.map(([id,q])=>`**${q}×** ${BY_ID[id].name}\n> Auszahlung: ${pf(BY_ID[id].price*q)} 💎`).join('\n\n');
+  const embed = {
+    title:'🏦 Neue Pfandhaus-Anfrage (Ankauf)',
+    color:0xe5a842,
+    description: text.slice(0,4000),
+    fields:[
+      {name:'👤 Spieler', value:`\`${currentUser}\``, inline:true},
+      {name:'💎 Auszahlung gesamt', value:`**${pf(sellTotal())} Diamanten**`, inline:true},
+      ...(comment?[{name:'💬 Kommentar', value:comment.slice(0,1000)}]:[])
+    ],
+    footer:{text:'Alexshop • Pfandhaus'},
+    timestamp:new Date().toISOString()
+  };
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  try{
+    const hook = isHook(PAWN_WEBHOOK_URL) ? PAWN_WEBHOOK_URL.trim() : WEBHOOK_URL;
+    const res = await fetch(hook,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop Pfandhaus',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})});
+    if(!res.ok) throw new Error('Discord antwortete mit Status '+res.status);
+    state.sell = {}; updatePawnBar();
+    $('#pawnComment').value = '';
+    $('#pawnFormView').hidden = true; $('#pawnOk').hidden = false;
+  }catch(ex){
+    err.textContent = 'Fehler beim Senden: '+ex.message; err.hidden = false;
+  }finally{
+    btn.disabled = false; btn.textContent = 'Ankauf senden';
+  }
+});
+
+// ====== Admin PIN & Preis-Editor ======
+const adminDlg = $('#adminDlg');
+
+let adminUnlocked = false;   // PIN wird pro Seitenaufruf nur einmal abgefragt
+function openAdminDialog(){
+  $('#pinErr').hidden = true;
+  $('#adminPin').value = '';
+  adminDlg.showModal();
+  if(adminUnlocked){ showAdminEditor(); return; }
+  $('#adminPinView').style.display = 'grid';
+  $('#adminEditorView').style.display = 'none';
+  setTimeout(() => $('#adminPin').focus(), 50);
+}
+
+const adminRow = item => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:#f3f8f2;border:1px solid #cfe0d1;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img data-k="${item.id}" src="${ico(item.id, item.tex)}" style="width:24px;height:24px">
+        <div style="min-width:0"><span style="font-size:13px;font-weight:600">${item.name}</span>${item.pair?`<small class="admin-margin" data-pawn="${item.id}" data-pair="${item.pair}" style="display:block;font-size:11px"></small>`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        ${item.custom?`<button type="button" class="rm" data-del="${item.id}" title="Item löschen">Löschen</button>`:''}
+        <label title="Im Shop sichtbar" style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#5f7a68;cursor:pointer"><input type="checkbox" class="admin-vis" data-item="${item.id}"${item.hidden?'':' checked'}>sichtbar</label>
+        <input type="number" step="0.5" min="0.1" class="f admin-p-input" data-item="${item.id}" value="${item.price}" style="width:70px;padding:4px 6px;text-align:right">
+        <span style="font-size:12px">💎</span>
+      </div>
+    </div>`;
+function renderAdminLists(){
+  $('#adminItemsList').innerHTML = ITEMS.filter(i=>!i.pawn).map(adminRow).join('');
+  $('#adminPawnList').innerHTML = ITEMS.filter(i=>i.pawn).map(adminRow).join('');
+  updateMargins();
+}
+function adminSnap(){
+  const p = {}, v = {};
+  document.querySelectorAll('.admin-p-input').forEach(i=>{ p[i.dataset.item] = i.value; });
+  document.querySelectorAll('.admin-vis').forEach(c=>{ v[c.dataset.item] = c.checked; });
+  return {p, v};
+}
+function adminRestore(sn){
+  document.querySelectorAll('.admin-p-input').forEach(i=>{ if(sn.p[i.dataset.item] !== undefined) i.value = sn.p[i.dataset.item]; });
+  document.querySelectorAll('.admin-vis').forEach(c=>{ if(sn.v[c.dataset.item] !== undefined) c.checked = sn.v[c.dataset.item]; });
+  updateMargins();
+}
+function showAdminEditor(){
+  $('#adminPinView').style.display = 'none';
+  $('#adminEditorView').style.display = 'flex';
+  renderAdminLists();
+  renderAdminPts();
+  setAdminTab('shop');
+}
+
+// Zeigt live, ob der Shop teurer verkauft als er ankauft
+function updateMargins(){
+  document.querySelectorAll('.admin-margin').forEach(el=>{
+    const ia = document.querySelector(`.admin-p-input[data-item="${el.dataset.pawn}"]`);
+    const ib = document.querySelector(`.admin-p-input[data-item="${el.dataset.pair}"]`);
+    const a = parseFloat(ia && ia.value), b = parseFloat(ib && ib.value);
+    if(isNaN(a) || isNaN(b)){ el.textContent = ''; return; }
+    const m = b - a;
+    el.textContent = `Shop verkauft für ${pf(b)} 💎 → ` + (m>0 ? `Gewinn ${pf(m)} 💎 pro Packung` : m===0 ? 'KEIN Gewinn' : `VERLUST ${pf(-m)} 💎 pro Packung`);
+    el.style.color = m>0 ? '#2d7a3e' : '#c0392b';
+  });
+}
+$('#adminEditorView').addEventListener('input', updateMargins);
+
+// Beide Listen bleiben im Dokument, damit beim Speichern alle Preise (Shop + Ankauf) erhalten bleiben
+function setAdminTab(tab){
+  $('#adminItemsList').style.display = tab === 'shop' ? 'grid' : 'none';
+  $('#adminPawnList').style.display = tab === 'pawn' ? 'grid' : 'none';
+  $('#adminNewView').style.display = tab === 'new' ? 'grid' : 'none';
+  $('#adminPtsView').style.display = tab === 'pts' ? 'grid' : 'none';
+  $('#admTabPts').classList.toggle('active', tab === 'pts');
+  $('#admTabShop').classList.toggle('active', tab === 'shop');
+  $('#admTabPawn').classList.toggle('active', tab === 'pawn');
+  $('#admTabNew').classList.toggle('active', tab === 'new');
+}
+$('#admTabShop').onclick = () => setAdminTab('shop');
+$('#admTabPawn').onclick = () => setAdminTab('pawn');
+$('#admTabNew').onclick = () => setAdminTab('new');
+$('#admTabPts').onclick = () => setAdminTab('pts');
+
+function rwValue(id){ const el = document.querySelector(`.admin-p-input[data-item="${id}"]`); const v = el ? parseFloat(el.value) : NaN; return isNaN(v) ? BY_ID[id].price : v; }
+function updateRwNotes(){
+  document.querySelectorAll('.rw-note').forEach(el=>{
+    const id = el.dataset.rw, v = rwValue(id), cost = parseFloat(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+    const ok = cost >= Math.ceil(v * MIN_PPV);
+    el.textContent = `Wert ${pf(v)} 💎 · Spieler gibt ${pf(cost/EARN)} 💎 aus → ${ok ? 'Gewinn für dich' : 'ZU GÜNSTIG'}`;
+    el.style.color = ok ? '#2d7a3e' : '#c0392b';
+  });
+}
+function updateSaleStatus(){
+  $('#saleStatus').textContent = saleActive()
+    ? `Läuft: −${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}${SALE.endsAt ? ' bis '+new Date(SALE.endsAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr' : ' (bis du sie beendest)'}`
+    : 'Gerade läuft keine Aktion.';
+}
+function renderAdminPts(){
+  $('#ptsRows').innerHTML = WHITELIST.map(n=>`<div class="ap-row"><span>${n}</span><span><input type="number" min="0" step="1" class="f admin-pts" data-pl="${n}" value="${POINTS[n]||0}" style="width:90px;padding:4px 6px;text-align:right"> ⭐</span></div>`).join('');
+  $('#qcPlayer').innerHTML = WHITELIST.map(n=>`<option>${n}</option>`).join('');
+  $('#qrReward').innerHTML = REWARD_IDS.map(id=>`<option value="${id}">${BY_ID[id].name}</option>`).join('');
+  $('#rwRows').innerHTML = REWARD_IDS.map(id=>{
+    const c = REWARD_CFG[id];
+    return `<div class="ap-row"><span>${BY_ID[id].name}<small class="rw-note" data-rw="${id}" style="display:block;font-size:11px"></small></span>
+      <span><label style="font-size:11px;font-weight:600"><input type="checkbox" class="admin-rw-act" data-rw="${id}"${c&&c.active===false?'':' checked'}> aktiv</label>
+      <input type="number" min="1" step="1" class="f admin-rw-cost" data-rw="${id}" value="${rewardCost(id)}" style="width:80px;padding:4px 6px;text-align:right"> ⭐</span></div>`;
+  }).join('');
+  updateRwNotes(); updateSaleStatus();
+}
+$('#adminEditorView').addEventListener('input', updateRwNotes);
+const ptsMsg = t => { const m = $('#ptsMsg'); m.textContent = t; m.hidden = false; };
+$('#qcBtn').onclick = () => {
+  const n = $('#qcPlayer').value, d = parseFloat($('#qcDiamonds').value);
+  if(!(d > 0)) return;
+  const add = Math.floor(d * EARN), inp = document.querySelector(`.admin-pts[data-pl="${n}"]`);
+  inp.value = (parseInt(inp.value)||0) + add; $('#qcDiamonds').value = '';
+  ptsMsg(`+${nf(add)} ⭐ für ${n} vorgemerkt. Unten auf „Preise speichern“ klicken.`);
+};
+$('#qrBtn').onclick = () => {
+  const n = $('#qcPlayer').value, id = $('#qrReward').value, inp = document.querySelector(`.admin-pts[data-pl="${n}"]`);
+  const cost = parseInt(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+  if((parseInt(inp.value)||0) < cost){ ptsMsg(`${n} hat nur ${nf(parseInt(inp.value)||0)} ⭐, das reicht nicht für ${nf(cost)} ⭐.`); return; }
+  inp.value = (parseInt(inp.value)||0) - cost;
+  ptsMsg(`−${nf(cost)} ⭐ von ${n} für „${BY_ID[id].name}“ vorgemerkt. Unten auf „Preise speichern“ klicken.`);
+};
+$('#saleStart').onclick = () => {
+  const pct = Math.min(90, Math.max(1, parseInt($('#salePct').value) || 0)), min = parseInt($('#saleDur').value) || 0;
+  SALE = {pct, target:$('#saleTarget').value, endsAt: min ? Date.now() + min*60000 : 0};
+  $('#savePricesBtn').click();
+};
+$('#saleStop').onclick = () => { SALE = null; $('#savePricesBtn').click(); };
+$('#newArea').onchange = () => { $('#newCatRow').style.display = $('#newArea').value === 'pawn' ? 'none' : ''; };
+
+// Neues Item anlegen (wird erst mit „Preise speichern“ für alle gespeichert)
+$('#newAddBtn').onclick = () => {
+  const err = $('#newErr'), ok = $('#newOk');
+  err.hidden = true; ok.hidden = true;
+  const name = $('#newName').value.trim();
+  const price = parseFloat($('#newPrice').value);
+  if(name.length < 2){ err.textContent = 'Bitte gib einen Namen ein.'; err.hidden = false; return; }
+  if(!(price > 0)){ err.textContent = 'Der Preis muss größer als 0 sein.'; err.hidden = false; return; }
+  const pawn = $('#newArea').value === 'pawn';
+  let tex = $('#newTex').value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_\/]/g,'');
+  if(tex && !tex.includes('/')) tex = 'item/' + tex;
+  const id = 'c_' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36);
+  const it = {id, tex: tex || ('item/'+id), name, cat: pawn ? 'Pfand' : $('#newCat').value, tier: pawn ? 'p' : 'b',
+    ench:[], price, rar: pawn ? 'Ankauf' : 'Eigenes Item', custom:true, pawn};
+  const sn = adminSnap();
+  ITEMS.push(it); BY_ID[id] = it;
+  renderAdminLists(); adminRestore(sn);
+  $('#newName').value = ''; $('#newTex').value = ''; $('#newPrice').value = 1;
+  ok.textContent = `✅ „${name}“ wurde hinzugefügt (${pawn ? 'Reiter Ankaufspreise' : 'Reiter Shop-Preise'}). Jetzt unten auf „Preise speichern“ klicken.`;
+  ok.hidden = false;
+};
+// Eigene Items wieder löschen
+$('#adminEditorView').addEventListener('click', e=>{
+  const id = e.target.dataset && e.target.dataset.del; if(!id) return;
+  const sn = adminSnap();
+  const idx = ITEMS.findIndex(i=>i.id === id);
+  if(idx >= 0){ ITEMS.splice(idx,1); delete BY_ID[id]; }
+  renderAdminLists(); adminRestore(sn);
+});
+
+$('#closeAdmin').onclick = $('#cancelAdmin').onclick = () => adminDlg.close();
+
+// Tastenkombination: Drücke "Shift + A" auf der Tastatur als Secret Shortcut
+document.addEventListener('keydown', e => {
+  if(e.shiftKey && (e.key === 'A' || e.key === 'a') && !e.target.matches('input, textarea')){
+    e.preventDefault();
+    openAdminDialog();
+  }
+});
+
+$('#checkPinBtn').onclick = () => {
+  const pin = $('#adminPin').value.trim();
+  if(pin === ADMIN_PIN){
+    adminUnlocked = true;
+    showAdminEditor();
+  } else {
+    $('#pinErr').hidden = false;
+    $('#adminPin').value = '';
+    $('#adminPin').focus();
+  }
+};
+
+$('#adminPin').addEventListener('keydown', e => {
+  if(e.key === 'Enter') $('#checkPinBtn').click();
+});
+
+$('#savePricesBtn').onclick = async () => {
+  const saveBtn = $('#savePricesBtn');
+  // Sperre: Ankauf darf nie so teuer sein wie der Shop-Verkauf (sonst gibt es keinen Gewinn)
+  const bad = ITEMS.filter(i=>i.pawn && i.pair).find(i=>{
+    const a = parseFloat(document.querySelector(`.admin-p-input[data-item="${i.id}"]`).value);
+    const b = parseFloat(document.querySelector(`.admin-p-input[data-item="${i.pair}"]`).value);
+    return !(a < b);
+  });
+  const warn = $('#admWarn');
+  if(bad){
+    warn.textContent = `⚠️ ${bad.name}: Der Ankaufspreis muss unter dem Shop-Preis liegen, sonst machst du Verlust. Nichts gespeichert.`;
+    warn.hidden = false; setAdminTab('pawn'); return;
+  }
+  const badRw = REWARD_IDS.find(id=>{
+    const act = document.querySelector(`.admin-rw-act[data-rw="${id}"]`), cost = parseFloat(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+    return act && act.checked && cost < Math.ceil(rwValue(id) * MIN_PPV);
+  });
+  if(badRw){
+    warn.textContent = `⚠️ Punkteshop: „${BY_ID[badRw].name}“ ist zu billig (mindestens ${MIN_PPV} ⭐ pro 💎 Warenwert). Nichts gespeichert.`;
+    warn.hidden = false; setAdminTab('pts'); return;
+  }
+  warn.hidden = true;
+  const custom = {};
+  document.querySelectorAll('.admin-p-input').forEach(input => {
+    const id = input.dataset.item;
+    const p = parseFloat(input.value);
+    if(BY_ID[id] && !isNaN(p) && p > 0){
+      BY_ID[id].price = p;
+      custom[id] = p;
+    }
+  });
+
+  // Sortiment: ausgeblendete und eigene Items mitspeichern
+  const hiddenIds = [...document.querySelectorAll('.admin-vis')].filter(c=>!c.checked).map(c=>c.dataset.item);
+  ITEMS.forEach(i=>{ i.hidden = hiddenIds.includes(i.id); });
+  custom.__hidden = hiddenIds;
+  custom.__custom = ITEMS.filter(i=>i.custom).map(i=>({id:i.id, name:i.name, cat:i.cat, price:i.price, tex:i.tex, pawn:!!i.pawn}));
+  const pts = {}; document.querySelectorAll('.admin-pts').forEach(i=>{ const n = Math.max(0, Math.floor(parseFloat(i.value)||0)); if(n > 0) pts[i.dataset.pl] = n; });
+  const rw = {}; document.querySelectorAll('.admin-rw-cost').forEach(i=>{
+    rw[i.dataset.rw] = {cost: Math.max(1, Math.floor(parseFloat(i.value)||1)), active: document.querySelector(`.admin-rw-act[data-rw="${i.dataset.rw}"]`).checked};
+  });
+  POINTS = pts; REWARD_CFG = rw;
+  custom.__points = pts; custom.__rewards = rw; custom.__sale = SALE;
+  pruneCarts(); updatePtsChip(); renderPts(); tickSale();
+
+  try {
+    localStorage.setItem('alexshop_custom_prices', JSON.stringify(custom));
+  } catch(e) {}
+
+  renderGrid(); renderPawn(); renderCart(); updatePawnBar();
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Cloud synchronisieren …';
+
+  try {
+    if(CLOUD_BIN_ID && CLOUD_API_KEY){
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': CLOUD_API_KEY
+        },
+        body: JSON.stringify(custom)
+      });
+      if(!res.ok) throw new Error('Cloud HTTP ' + res.status);
+    }
+    adminDlg.close();
+    toast('🌐 Preise und Sortiment LIVE in der Cloud für ALLE gespeichert!');
+  } catch(err) {
+    adminDlg.close();
+    toast('⚠️ Lokal gespeichert, Cloud-Sync fehlgeschlagen.');
+    console.error(err);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Preise speichern';
+  }
+};
+
+$('#resetPricesBtn').onclick = async () => {
+  if(!confirm('Alle Preise und das Sortiment (ausgeblendete und eigene Items) wirklich auf Standard zurücksetzen?')) return;
+  try { localStorage.removeItem('alexshop_custom_prices'); } catch(e) {}
+  
+  try {
+    if(CLOUD_BIN_ID && CLOUD_API_KEY){
+      await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': CLOUD_API_KEY },
+        body: JSON.stringify({})
+      });
+    }
+  } catch(e) {}
+
+  location.reload();
+};
+
+// ====== Login & Whitelist Logik ======
+function checkSavedLogin(){
+  const saved = localStorage.getItem('alexshop_user');
+  const savedPin = localStorage.getItem('alexshop_pin');
+  if(saved && matchWhitelist(saved) && pinOk(matchWhitelist(saved), savedPin)){
+    setLoggedInUser(matchWhitelist(saved));
+  } else {
+    $('#loginOverlay').style.display = 'grid';
+    setTimeout(() => $('#loginUsername').focus(), 100);
+  }
+}
+
+function matchWhitelist(inputName){
+  return WHITELIST.find(name => name.toLowerCase() === inputName.trim().toLowerCase()) || null;
+}
+
+function handleLogin(){
+  const err = $('#loginError');
+  if(Date.now() < loginLockUntil){
+    err.textContent = `⏳ Zu viele Versuche. Bitte warte ${Math.ceil((loginLockUntil-Date.now())/1000)} Sekunden.`;
+    err.hidden = false; return;
+  }
+  const input = $('#loginUsername').value.trim();
+  const pin = $('#loginPin').value.trim();
+  const matched = matchWhitelist(input);
+  if(matched && pinOk(matched, pin)){
+    err.hidden = true; loginFails = 0;
+    localStorage.setItem('alexshop_user', matched);
+    localStorage.setItem('alexshop_pin', pin);
+    $('#loginPin').value = '';
+    setLoggedInUser(matched);
+  } else {
+    loginFails++;
+    if(loginFails >= 5){ loginFails = 0; loginLockUntil = Date.now() + 30000; err.textContent = '⏳ Zu viele Fehlversuche. Bitte warte 30 Sekunden.'; }
+    else err.textContent = '❌ Name oder Passwort falsch!';
+    err.hidden = false;
+    $('#loginPin').value = '';
+    $('#loginPin').focus();
+  }
+}
+
+function setLoggedInUser(name){
+  currentUser = name;
+  $('#loginOverlay').style.display = 'none';
+  $('#userProfile').hidden = false;
+  $('#userNameDisplay').textContent = name;
+  updatePtsChip(); renderPts();
+  setHeadImg($('#userHead'), name, 32);
+  toast(`Willkommen im Shop, ${name}! 👋`);
+}
+
+$('#logoutBtn').onclick = () => {
+  localStorage.removeItem('alexshop_user');
+  localStorage.removeItem('alexshop_pin');
+  $('#loginPin').value = '';
+  currentUser = null;
+  $('#userProfile').hidden = true;
+  $('#loginUsername').value = '';
+  $('#loginError').hidden = true;
+  $('#loginOverlay').style.display = 'grid';
+  setTimeout(() => $('#loginUsername').focus(), 100);
+};
+
+// ====== Start ======
+checkSavedLogin();
+applyStaticTex();
+renderFilters();
+renderGrid(); renderPawn(); renderCart();
+syncPricesFromCloud();
+tickSale(); setInterval(tickSale, 1000);
+</script>
+
+<script>
+// Kirschblüten Canvas Animation
+(function(){
+  const cv=document.getElementById('petals'),cx=cv.getContext('2d');
+  const SHAPES=[['.aab.','aabbb','abbbc','.bbcc','..cc.'],['..a..','.abb.','abbbc','.bbc.','..c..']];
+  const PALS=[{a:'#ffe6f1',b:'#ffb6d3',c:'#f585b3'},{a:'#a6e093',b:'#62b258',c:'#3d8040'}];
+  const sprites=[0,1].map(sh=>{
+    const c=document.createElement('canvas');c.width=c.height=5;const x=c.getContext('2d');
+    SHAPES[sh].forEach((r,y)=>[...r].forEach((ch,i)=>{ if(ch!=='.'){ x.fillStyle=PALS[0][ch]; x.fillRect(i,y,1,1); } }));
+    return c;
+  });
+  let W=0,H=0,ps=[];
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  function mk(top){ return {k:Math.floor(rnd(0,2)),x:rnd(0,W),y:top?rnd(-H*.1,-10):rnd(0,H),s:Math.round(rnd(2,4.2)),vy:rnd(28,68),sw:rnd(12,32),f:rnd(.6,1.4),ph:rnd(0,6.28),r:rnd(0,6.28),vr:rnd(-1.2,1.2),a:rnd(.6,1)}; }
+  function size(){
+    const d=Math.min(devicePixelRatio||1,2);
+    W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);cx.imageSmoothingEnabled=false;
+    const n=Math.max(20,Math.min(60,Math.round(W/30)));
+    while(ps.length<n)ps.push(mk(false)); ps.length=n;
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    ps.forEach(p=>{
+      cx.save();cx.globalAlpha=p.a;cx.translate(Math.round(p.x),Math.round(p.y));cx.rotate(p.r);cx.scale(p.s,p.s);
+      cx.drawImage(sprites[p.k],-2.5,-2.5,5,5);cx.restore();
+    });
+  }
+  let last=0;
+  function tick(t){
+    const dt=Math.min((t-last)/1000||0,.05);last=t;
+    ps.forEach(p=>{
+      p.ph+=dt*p.f;p.y+=p.vy*dt;p.x+=Math.sin(p.ph)*p.sw*dt+5*dt;p.r+=p.vr*dt;
+      if(p.y>H+16){Object.assign(p,mk(true));}
+      if(p.x>W+16)p.x=-16;
+    });
+    draw();requestAnimationFrame(tick);
+  }
+  addEventListener('resize',size);
+  size();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
