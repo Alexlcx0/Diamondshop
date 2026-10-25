@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: https://raw.githubusercontent.com https://cdn.jsdelivr.net https://cravatar.eu https://mc-heads.net https://minotar.net; connect-src https://api.jsonbin.io https://discord.com; base-uri 'none'; object-src 'none'">
+<title>Alexshop – Minecraft Server Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deepslate:#12151b; --slate:#1a1e27; --panel:#212633; --line:#2f3646;
+  --text:#e8ecf3; --muted:#9aa4b8;
+  --diamond:#4de8d8; --diamond-deep:#0e5f63;
+  --nether:#b78a78; --nether-deep:#43303a; --ember:#ff8a3d;
+  --good:#7ee787; --bad:#ff7b72;
+  --redstone:#ff3b30;
+  --pixel:'Silkscreen','Courier New',monospace;
+  --sans:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);font-family:var(--sans);line-height:1.5;
+  background:linear-gradient(180deg,#e4f0e2 0%,#c6dec9 55%,#a5c8ae 100%) fixed;
+  min-height:100vh;
+}
+img{image-rendering:pixelated}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--diamond);outline-offset:2px}
+
+#petals{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+header.top{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:12px clamp(16px,4vw,48px);background:rgba(238,247,238,.9);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(30,70,45,.2);
+  transition:box-shadow .3s ease;
+}
+header.top:hover{box-shadow:0 4px 20px rgba(35,80,50,.15)}
+
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--pixel);font-size:20px;font-weight:700;color:#1f3a2a}
+.brand img{width:32px;height:32px;animation:spinFloat 4s ease-in-out infinite}
+@keyframes spinFloat{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-4px) rotate(8deg)}
+}
+
+.cart-btn{
+  display:flex;align-items:center;gap:10px;background:#fbfdf9;color:#1f3a2a;border:1px solid #cfe0d1;
+  border-radius:10px;padding:9px 14px;font-weight:600;font-size:15px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 8px rgba(35,80,50,.08);
+}
+.cart-btn:hover{border-color:var(--diamond);background:#fff;transform:translateY(-2px);box-shadow:0 6px 16px rgba(47,185,173,.25)}
+.cart-btn img{width:22px;height:22px;transition:transform .2s}
+.cart-btn:hover img{transform:scale(1.15) rotate(-6deg)}
+.badge{
+  min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:var(--diamond);color:#06302f;
+  font-weight:700;font-size:13px;display:grid;place-items:center;
+  transition:transform .2s;
+}
+.badge.bump{animation:cartBump .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cartBump{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.4) rotate(12deg)}
+  100%{transform:scale(1)}
+}
+
+.hero{
+  position:relative;z-index:1;max-width:1200px;margin:0 auto;
+  padding:clamp(30px,5vw,60px) clamp(16px,4vw,48px) 20px;
+  text-align:center;
+}
+.hero h1{
+  font-family:var(--pixel);font-size:clamp(24px,4vw,44px);line-height:1.15;margin:0 0 14px;
+  font-weight:700;color:#1f3a2a;
+  animation:fadeSlideDown .8s cubic-bezier(.16,1,.3,1) both;
+}
+.hero p{
+  max-width:62ch;margin:0 auto 20px;color:#3f5b49;font-size:17px;
+  animation:fadeSlideDown .8s .15s cubic-bezier(.16,1,.3,1) both;
+}
+.fee-badge{
+  display:inline-flex;align-items:center;gap:8px;background:#eef6ed;color:#1f3a2a;
+  border:1px solid #b6d3bc;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;
+  margin-bottom:12px;box-shadow:0 2px 8px rgba(35,80,50,.1);
+  animation:pulseBadge 3s infinite ease-in-out;
+}
+@keyframes pulseBadge{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.03);box-shadow:0 4px 14px rgba(47,185,173,.35)}
+}
+.fee-badge img{width:18px;height:18px}
+@keyframes fadeSlideDown{
+  from{opacity:0;transform:translateY(-20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.shop{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:10px clamp(16px,4vw,48px) 80px}
+.filters{
+  display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin-bottom:24px;padding:14px 18px;
+  background:#fbfdf9;border:1px solid #cfe0d1;border-radius:14px;box-shadow:0 8px 24px rgba(35,80,50,.12);
+  transition:box-shadow .2s;
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  background:transparent;color:#5f7a68;border:1px solid #cfe0d1;border-radius:999px;
+  padding:7px 16px;font-weight:600;font-size:14px;transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.chip:hover{color:#1f3a2a;border-color:#96b09b;transform:translateY(-1px)}
+.chip[aria-pressed=true]{background:#1f3a2a;color:#fff;border-color:#1f3a2a;transform:scale(1.04)}
+.chip.d[aria-pressed=true]{background:var(--diamond);border-color:var(--diamond);color:#05302e}
+.chip.n[aria-pressed=true]{background:var(--nether);border-color:var(--nether);color:#2a1a14}
+.count{margin-left:auto;color:#5f7a68;font-size:14px;font-weight:500}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.card{
+  background:#fbfdf9;border:1px solid #cfe0d1;border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(35,80,50,.12);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .25s;
+  position:relative;
+}
+.card:hover{
+  transform:translateY(-6px);box-shadow:0 14px 30px rgba(35,80,50,.22);
+  border-color:#2fb9ad;
+}
+.card.n:hover{border-color:#e0813f}
+.card.r:hover{border-color:var(--redstone)}
+
+.art{height:140px;display:grid;place-items:center;position:relative;overflow:hidden}
+.d .art{background:radial-gradient(circle at 50% 45%,#f3fffd 0%,#bfece8 60%,#8fd6cf 100%)}
+.n .art{background:radial-gradient(circle at 50% 45%,#fff3ec 0%,#ecccbd 60%,#d9ab98 100%)}
+.r .art{background:radial-gradient(circle at 50% 45%,#fff0f0 0%,#f9c9c7 60%,#e89b98 100%)}
+.b .art{background:radial-gradient(circle at 50% 45%,#f4faee 0%,#d3e6cf 60%,#b2cfad 100%)}
+
+.art img{
+  width:84px;height:84px;filter:drop-shadow(0 6px 8px rgba(25,60,40,.25));
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.card:hover .art img{transform:scale(1.15) rotate(3deg)}
+
+.rar{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.8);color:#1f3a2a;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.rar.rare{color:#087a8c} .rar.epic{color:#8a2bb5} .rar.red{color:#c92a2a}
+
+.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;color:#1f3a2a}
+.body h3{margin:0;font-size:16px;font-weight:700}
+.note{margin:0;color:#5f7a68;font-size:12px}
+
+.opt{border:1px solid #cfe0d1;border-radius:10px;background:#f3f8f2;padding:0 10px;transition:border-color .2s}
+.opt:hover{border-color:#96b09b}
+.opt summary{cursor:pointer;padding:8px 0;font-weight:600;font-size:13px}
+.opt summary small{color:#5f7a68;font-weight:400}
+.opt[open] summary{border-bottom:1px solid #cfe0d1;margin-bottom:6px}
+.eo{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px;padding:3px 0;cursor:pointer;color:#583d8b}
+.eo input{accent-color:var(--diamond);width:15px;height:15px}
+.eo span{flex:1}.eo em{font-style:normal;color:#5f7a68;font-size:12px}
+
+.price{display:flex;align-items:center;gap:6px;font-weight:700;font-size:18px;margin-top:auto;padding-top:4px;flex-wrap:wrap}
+.price img{width:20px;height:20px}
+.price small{display:block;font-size:11px;font-weight:500;color:#5f7a68;flex-basis:100%;margin-top:-2px}
+
+.quick-qty{display:flex;gap:5px;align-items:center;margin-top:2px}
+.qbtn{
+  background:#f3f8f2;border:1px solid #cfe0d1;color:#1f3a2a;font-size:11px;font-weight:700;
+  border-radius:6px;padding:3px 7px;transition:all .15s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+}
+.qbtn:hover{background:#fff;border-color:var(--diamond);color:#0e5f63;transform:translateY(-1px)}
+.qbtn:active{transform:scale(.92)}
+.qbtn.active{background:var(--diamond);border-color:var(--diamond);color:#05302e}
+
+.buy{display:flex;gap:8px;align-items:stretch;margin-top:4px}
+.qty{display:flex;border:1px solid #cfe0d1;border-radius:10px;overflow:hidden;background:#fff}
+.qty button{width:32px;background:transparent;border:0;color:#1f3a2a;font-size:17px;transition:background .15s}
+.qty button:hover{background:#e2eee2}
+.qty button:active{transform:scale(.92)}
+.qty input{width:48px;text-align:center;background:transparent;border:0;border-inline:1px solid #cfe0d1;color:#1f3a2a;font:600 14px var(--sans);-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+.add{
+  flex:1;border:0;border-radius:10px;font-weight:700;font-size:13px;padding:9px;
+  background:var(--diamond);color:#05302e;box-shadow:0 3px 0 #1b9f95;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.n .add{background:var(--nether);color:#2a1a14;box-shadow:0 3px 0 #7e523f}
+.r .add{background:#ff968f;color:#4a100d;box-shadow:0 3px 0 #b34a44}
+.b .add{background:#9ad493;color:#173d12;box-shadow:0 3px 0 #4f8548}
+.add:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 4px 0 #1b9f95}
+.add:active{transform:translateY(2px);box-shadow:0 1px 0 #1b9f95}
+.add.done{
+  background:var(--good)!important;color:#06280d!important;box-shadow:0 2px 0 #2b8237!important;
+  animation:donePulse .4s ease;
+}
+@keyframes donePulse{
+  50%{transform:scale(1.06)}
+}
+
+/* Flying item animation */
+.flying-particle{
+  position:fixed;z-index:9999;width:36px;height:36px;pointer-events:none;
+  image-rendering:pixelated;transition:all .6s cubic-bezier(.22,.8,.36,1);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));
+}
+
+/* Drawer / Cart */
+.overlay{position:fixed;inset:0;background:rgba(15,35,20,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:30;backdrop-filter:blur(3px)}
+.overlay.on{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(450px,100%);background:#fbfdf9;
+  border-left:1px solid #cfe0d1;z-index:40;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.3,.8,.3,1);
+  box-shadow:-12px 0 40px rgba(25,60,40,.25);color:#1f3a2a;
+}
+.drawer.on{transform:none}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #cfe0d1}
+.drawer h2{margin:0;font-family:var(--pixel);font-size:18px}
+.x{background:transparent;border:1px solid #cfe0d1;color:#1f3a2a;width:34px;height:34px;border-radius:8px;font-size:18px;transition:all .15s}
+.x:hover{border-color:#c0392b;color:#c0392b;transform:rotate(90deg)}
+
+.lines{flex:1;overflow:auto;padding:12px 20px}
+.line{
+  display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:12px 0;
+  border-bottom:1px solid #cfe0d1;animation:lineSlideIn .3s ease both;
+}
+@keyframes lineSlideIn{
+  from{opacity:0;transform:translateX(15px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.line img{width:48px;height:48px;background:#edf6ed;border-radius:8px;padding:4px}
+.line b{display:block;font-size:14px} .line small{color:#5f7a68;display:block}
+.line .sum{text-align:right;font-weight:700;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.rm{background:none;border:0;color:#c0392b;font-size:12px;padding:0;text-decoration:underline;transition:opacity .15s}
+.rm:hover{opacity:.7}
+
+.empty{text-align:center;color:#5f7a68;padding:60px 20px}
+.empty img{width:56px;opacity:.5;margin-bottom:10px;animation:floatEmpty 3s ease-in-out infinite}
+@keyframes floatEmpty{0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}}
+
+.foot{padding:16px 20px;border-top:1px solid #cfe0d1;display:grid;gap:10px;background:#f3f8f2}
+.fee-row{display:flex;justify-content:space-between;font-size:13px;color:#5f7a68}
+.total{display:flex;justify-content:space-between;align-items:center;font-size:17px;font-weight:700}
+.total strong{display:flex;align-items:center;gap:6px;font-size:22px;color:#1f3a2a}
+.total img{width:22px;height:22px}
+.primary{
+  background:var(--diamond);color:#05302e;border:0;border-radius:10px;font-weight:700;font-size:15px;
+  padding:12px;box-shadow:0 3px 0 #1b9f95;transition:all .15s cubic-bezier(.34,1.56,.64,1);
+}
+.primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 0 #1b9f95;filter:brightness(1.05)}
+.primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #1b9f95}
+.primary:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+.ghost{background:transparent;color:#5f7a68;border:1px solid #cfe0d1;border-radius:10px;padding:9px;font-weight:600;transition:all .15s}
+.ghost:hover{color:#1f3a2a;border-color:#96b09b}
+
+/* Modal Dialog */
+dialog{
+  border:1px solid #cfe0d1;border-radius:18px;background:#fbfdf9;color:#1f3a2a;padding:0;
+  width:min(520px,calc(100% - 24px));max-height:92vh;box-shadow:0 20px 50px rgba(25,60,40,.3);
+}
+dialog[open]{animation:dialogPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes dialogPop{
+  from{opacity:0;transform:scale(.92) translateY(10px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+dialog::backdrop{background:rgba(15,35,20,.6);backdrop-filter:blur(4px)}
+.dlg{padding:22px;display:grid;gap:14px}
+.dlg h2{margin:0;font-family:var(--pixel);font-size:20px}
+.sum-list{background:#f3f8f2;border-radius:12px;padding:6px 14px;max-height:190px;overflow:auto;font-size:13px;border:1px solid #cfe0d1}
+.sum-list div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #e1ede2}
+.sum-list div:last-child{border:0}
+label{display:grid;gap:5px;font-weight:600;font-size:13px}
+label small{color:#5f7a68;font-weight:400}
+input.f,textarea.f{background:#fff;border:1px solid #cfe0d1;border-radius:10px;color:#1f3a2a;padding:10px 12px;font:500 14px var(--sans);width:100%;transition:border-color .2s}
+input.f:focus,textarea.f:focus{outline:none;border-color:var(--diamond);box-shadow:0 0 0 3px rgba(77,232,216,.25)}
+textarea.f{resize:vertical;min-height:70px}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px}
+.msg.err{background:rgba(220,80,70,.12);border:1px solid rgba(192,57,43,.4);color:#9b2c25}
+.success{text-align:center;padding:16px 0}
+.success img{width:72px;animation:successBounce .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes successBounce{0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)}}
+.dlg .row{display:flex;gap:10px} .dlg .row .primary{flex:1}
+
+footer{position:relative;z-index:1;text-align:center;color:#3f5b49;font-size:14px;padding:26px 16px 46px;border-top:1px solid rgba(30,70,45,.2)}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,120px);
+  background:#fbfdf9;color:#1f3a2a;border:2px solid var(--diamond);padding:10px 18px;
+  border-radius:12px;z-index:60;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  font-weight:600;box-shadow:0 8px 24px rgba(25,60,40,.25);display:flex;align-items:center;gap:8px;
+}
+.toast.on{transform:translate(-50%,0)}
+.user-pill{
+  display:flex;align-items:center;gap:8px;background:#fbfdf9;border:1px solid #cfe0d1;
+  padding:5px 12px 5px 8px;border-radius:999px;font-weight:600;font-size:13px;color:#1f3a2a;
+  box-shadow:0 2px 8px rgba(35,80,50,.08);
+}
+.user-pill img{width:22px;height:22px;border-radius:4px;image-rendering:pixelated}
+.logout-btn{
+  background:none;border:none;color:#c0392b;font-size:11px;cursor:pointer;
+  padding:0 0 0 6px;text-decoration:underline;
+}
+
+/* Login Modal */
+#loginOverlay{
+  position:fixed;inset:0;background:rgba(15,35,20,.75);backdrop-filter:blur(6px);
+  z-index:999;display:grid;place-items:center;padding:16px;
+}
+.login-box{
+  background:#fbfdf9;border:2px solid #cfe0d1;border-radius:20px;padding:28px 24px;
+  width:min(400px,100%);text-align:center;box-shadow:0 20px 60px rgba(25,60,40,.4);
+  animation:dialogPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+.login-box h2{font-family:var(--pixel);font-size:20px;color:#1f3a2a;margin:12px 0 6px}
+.login-box p{font-size:14px;color:#5f7a68;margin:0 0 18px}
+.login-input{
+  width:100%;background:#fff;border:2px solid #cfe0d1;border-radius:10px;
+  padding:12px 14px;font:600 16px var(--sans);color:#1f3a2a;text-align:center;
+  margin-bottom:12px;transition:border-color .2s;
+}
+.login-input:focus{outline:none;border-color:var(--diamond);box-shadow:0 0 0 3px rgba(77,232,216,.25)}
+.nav-tabs{
+  display:flex;gap:6px;background:rgba(238,247,238,.9);border:1px solid #cfe0d1;
+  padding:4px;border-radius:12px;margin-left:16px;
+}
+.tab-btn{
+  background:transparent;border:0;color:#5f7a68;font-weight:700;font-size:14px;
+  padding:7px 16px;border-radius:9px;transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;gap:6px;
+}
+.tab-btn:hover{color:#1f3a2a;background:rgba(255,255,255,.6)}
+.tab-btn.active{background:#1f3a2a;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+
+.sell-card{border-color:#e0cdab}
+.sell-card:hover{border-color:#d4a359;box-shadow:0 14px 30px rgba(180,120,40,.22)}
+.sell-btn{background:#e5a842!important;color:#2c1b02!important;box-shadow:0 3px 0 #ab751b!important}
+.sell-btn:hover{filter:brightness(1.08)!important}
+
+.pawn-badge{
+  display:inline-flex;align-items:center;gap:8px;background:#fcf6ea;color:#6b470d;
+  border:1px solid #e8cf9e;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;
+  margin-bottom:12px;box-shadow:0 2px 8px rgba(180,120,40,.1);
+}
+.sell-card .art{background:radial-gradient(circle at 50% 45%,#fff8e6 0%,#f0d9a8 60%,#dcb673 100%)}
+.sell-card .add{background:#e5a842;color:#2c1b02}
+.rar.sell{color:#a86a0c}
+.pawn-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:14px;
+  background:#fffaf0;border:1px solid #e8cf9e;border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(120,80,20,.3);font-weight:600;color:#6b470d}
+.pawn-bar[hidden]{display:none}
+#pawnDlg{border:1px solid #cfe0d1;border-radius:18px;background:#fbfdf9;color:#1f3a2a;padding:0;width:min(520px,calc(100% - 24px));max-height:92vh}
+#pawnDlg::backdrop{background:rgba(5,7,10,.72)}
+#pawnDlg [hidden]{display:none!important}
+.ns{width:1.15em;height:1.15em;image-rendering:pixelated;vertical-align:-.2em}
+.pts-chip{background:#efe7fb;color:#4a2f7a;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700}
+.sale-banner{position:sticky;top:0;z-index:40;text-align:center;font-weight:700;padding:9px 12px;color:#fff;background:linear-gradient(90deg,#e0592a,#f2a03d)}
+.sale-banner[hidden]{display:none}
+.pts-btn{background:#7c5cc4!important;color:#fff!important}
+.pts-btn:disabled{opacity:.45;cursor:not-allowed}
+.ap-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;background:#f3f8f2;border:1px solid #cfe0d1;border-radius:8px;font-size:13px;font-weight:600}
+
+/* ===== Suche, Theme-Schalter, Spieler-Verwaltung ===== */
+.searchbar{display:flex;align-items:center;gap:8px;max-width:520px;margin:0 0 14px;padding:8px 14px;background:#fbfdf9;border:1px solid #cfe0d1;border-radius:14px;box-shadow:0 4px 14px rgba(35,80,50,.1);transition:box-shadow .25s,border-color .25s,transform .25s}
+.searchbar:focus-within{border-color:#2fb9ad;box-shadow:0 0 0 3px rgba(47,185,173,.25);transform:translateY(-1px)}
+.searchbar input{flex:1;min-width:0;border:0;background:transparent;font:inherit;outline:none;color:#1f3a2a}
+.empty{grid-column:1/-1;text-align:center;color:#5f7a68;padding:30px 0;animation:fadeUp .4s both}
+.theme-toggle{width:38px;height:38px;border-radius:50%;border:1px solid rgba(30,70,45,.25);background:#fbfdf9;font-size:18px;display:grid;place-items:center;padding:0;transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+.theme-toggle:hover{transform:rotate(20deg) scale(1.1);box-shadow:0 4px 12px rgba(35,80,50,.25)}
+.theme-toggle.spin{animation:themeSpin .6s ease}
+.login-box{position:relative}
+.theme-login{position:absolute;top:12px;right:12px}
+.usr-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid #cfe0d1;border-radius:10px;padding:8px 10px;background:#f7fbf6}
+.usr-badge{font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:6px}
+.usr-badge.own{background:#fff1c9;color:#7a5200}.usr-badge.adm{background:#dff3ff;color:#0b5a82}.usr-badge.blk{background:#ffd9d6;color:#9b1c13}
+
+/* ===== Animationen ===== */
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes themeSpin{from{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.25)}to{transform:rotate(360deg) scale(1)}}
+@keyframes nsPulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.2) rotate(8deg)}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+@keyframes loginIn{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 rgba(255,140,60,0)}50%{box-shadow:0 0 18px rgba(255,140,60,.55)}}
+@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes backdropIn{from{opacity:0}to{opacity:1}}
+.card.enter{animation:cardIn .55s cubic-bezier(.2,.9,.3,1) backwards;animation-delay:calc(var(--i,0)*40ms)}
+.hero{animation:fadeUp .5s ease both}
+.login-box{animation:loginIn .6s cubic-bezier(.2,.9,.3,1) both}
+.ns{animation:nsPulse 2.8s ease-in-out infinite}
+#badge.bump,#ordBadge.bump{animation:bump .45s ease}
+#ordBadge:not([hidden]){animation:badgePulse 1.6s ease-in-out infinite}
+.sale-banner:not([hidden]){animation:glowPulse 2.6s ease-in-out infinite}
+dialog[open]::backdrop{animation:backdropIn .3s ease}
+.add,.primary{position:relative;overflow:hidden}
+.add::after,.primary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-130%);pointer-events:none}
+.add:hover::after,.primary:hover::after{transform:translateX(130%);transition:transform .7s ease}
+.add:active,.primary:active,.ghost:active,.chip:active,.tab-btn:active,.logout-btn:active,.cart-btn:active{transform:scale(.95)}
+.chip,.tab-btn,.logout-btn,.ghost,.primary,.add{transition:transform .2s cubic-bezier(.34,1.56,.64,1),background-color .25s,color .25s,border-color .25s,box-shadow .25s}
+.usr-row,.ap-row{animation:fadeUp .35s both}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== Dunkler Modus (invertiert die gesamte Seite, Bilder werden zurückgedreht) ===== */
+[hidden]{display:none!important}
+html{transition:filter .45s ease}
+html[data-theme="dark"]{filter:invert(1) hue-rotate(180deg) contrast(.9) brightness(1.06);background:#fff}
+html[data-theme="dark"] .emo,html[data-theme="dark"] img,html[data-theme="dark"] canvas,html[data-theme="dark"] video{filter:invert(1) hue-rotate(180deg)}
+html[data-theme="dark"] dialog::backdrop{background:rgba(235,245,238,.6)}
+</style>
+<script>try{var __t=localStorage.getItem("alexshop_theme");document.documentElement.dataset.theme=(__t==="dark")?"dark":"light";}catch(e){}</script>
+</head>
+<body>
+
+<canvas id="petals" aria-hidden="true"></canvas>
+
+<!-- Login Overlay / Whitelist Gate -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <button type="button" class="theme-toggle theme-login" aria-label="Hell/Dunkel wechseln"><span class="emo">🌙</span></button>
+    <img data-tex="diamond" style="width:48px;height:48px" alt="">
+    <h2>Server Shop Login</h2>
+    <p>Zugriff nur für Whitelist-Spieler unseres Servers. Gib deinen Minecraft-Namen und dein 4-stelliges Passwort ein:</p>
+    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+      <input type="text" id="loginUsername" class="login-input" placeholder="Minecraft-Name eingeben..." autocomplete="off" required>
+      <input type="password" id="loginPin" class="login-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="4-stelliges Passwort" autocomplete="off" required>
+      <div id="loginError" class="msg err" style="margin-bottom:12px" hidden>❌ Name oder Passwort falsch!</div>
+      <button type="submit" class="primary" style="width:100%;padding:13px;font-size:16px">Shop betreten ➔</button>
+    </form>
+  </div>
+</div>
+
+<header class="top">
+  <div style="display:flex;align-items:center">
+    <div class="brand"><img src="" data-tex="diamond" alt="">Alexshop</div>
+    <nav class="nav-tabs">
+      <button class="tab-btn active" id="tabShop" onclick="switchPage('shop')">🛒 Shop</button>
+      <button class="tab-btn" id="tabPawn" onclick="switchPage('pawn')">🏦 Pfandhaus</button>
+      <button class="tab-btn" id="tabPts" onclick="switchPage('pts')"><img class="ns" data-tex="nether_star" alt=""> Punkteshop</button>
+    </nav>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button type="button" class="theme-toggle" id="themeBtn" aria-label="Hell/Dunkel wechseln"><span class="emo">🌙</span></button>
+    <div id="userProfile" class="user-pill" hidden>
+      <img id="userHead" src="" alt="">
+      <span id="userNameDisplay">Steve</span>
+      <span id="myPts" class="pts-chip" title="Deine Punkte"><img class="ns" data-tex="nether_star" alt=""> 0</span>
+      <button class="logout-btn" id="myOrdersBtn" title="Meine Bestellungen">📦 Bestellungen <span id="ordBadge" class="pts-chip" style="background:#d9534f;color:#fff;padding:0 6px" hidden>0</span></button>
+      <button class="logout-btn" id="logoutBtn" title="Abmelden">Abmelden</button>
+    </div>
+    <button class="cart-btn" id="openCart" aria-label="Warenkorb öffnen">
+      <img data-tex="bundle" alt=""><span>Warenkorb</span><span class="badge" id="badge">0</span>
+    </button>
+  </div>
+</header>
+<div id="saleBanner" class="sale-banner" hidden></div>
+
+<!-- HERO SHOP -->
+<section class="hero" id="heroShop">
+  <div>
+    <h1>Minecraft Server Shop</h1>
+    <p>Ausrüstung, Redstone-Komponenten, Kisten, Hopper, Holz &amp; Eisen direkt auf unserem Server bestellen.</p>
+    <div class="fee-badge">
+      <img data-tex="diamond" alt="">
+      <span><strong>1 Diamant Bearbeitungsgebühr</strong> nur pro bestelltem Werkzeug (Tools)</span>
+    </div>
+  </div>
+</section>
+
+<!-- HERO PFANDHAUS (ANKAUF) -->
+<section class="hero" id="heroPawn" style="display:none">
+  <div>
+    <h1 style="color:#6b470d">🏦 Pfandhaus (Ankauf)</h1>
+    <p style="color:#5c4728">Verkaufe deine überschüssigen Items und Ressourcen direkt gegen bare Diamanten!</p>
+    <div class="pawn-badge">
+      <img data-tex="diamond" alt="">
+      <span>Wir zahlen sofort in <strong>Diamanten</strong> bei Übergabe auf dem Server!</span>
+    </div>
+  </div>
+</section>
+
+<!-- HERO PUNKTESHOP -->
+<section class="hero" id="heroPts" style="display:none">
+  <div>
+    <h1 style="color:#4a2f7a"><img class="ns" data-tex="nether_star" alt=""> Punkteshop</h1>
+    <p style="color:#4a3a66">Für jeden ausgegebenen Diamanten gibt es 2 Punkte, automatisch beim Absenden deiner Bestellung. Tausche sie hier gegen Belohnungen.</p>
+    <div class="pawn-badge" style="background:#f1eafc;border-color:#cdbbef;color:#4a3a66">
+      <span>Dein Kontostand: <strong id="ptsBal">0</strong> <img class="ns" data-tex="nether_star" alt=""> <small id="ptsPend"></small></span>
+    </div>
+  </div>
+</section>
+
+<main class="shop" id="shop">
+  <div class="searchbar" id="searchBar"><span aria-hidden="true">🔎</span><input id="searchInput" type="search" placeholder="Items suchen …  (Taste „/“)" autocomplete="off" maxlength="40" aria-label="Suchen"></div>
+  <div class="filters" id="shopFilters">
+    <div class="chips" id="catChips" role="group" aria-label="Kategorie"></div>
+    <div class="chips" id="subChips" role="group" aria-label="Filter"></div>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <!-- Pfandhaus Grid -->
+  <div class="grid" id="pawnGrid" style="display:none"></div>
+  <div class="grid" id="ptsGrid" style="display:none"></div>
+</main>
+
+<footer>Nur für unsere Gruppe. Die Übergabe der Items findet auf dem Server statt.</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="Warenkorb" aria-hidden="true">
+  <header><h2>Warenkorb</h2><button class="x" id="closeCart" aria-label="Schließen">✕</button></header>
+  <div class="lines" id="lines"></div>
+  <div class="foot">
+    <div class="fee-row">
+      <span>Artikelpreis</span>
+      <span><span id="subTotal">0</span> 💎</span>
+    </div>
+    <div class="fee-row">
+      <span>Bearbeitungsgebühr (1💎 / Tool)</span>
+      <span>+<span id="feeTotal">0</span> 💎</span>
+    </div>
+    <div class="total"><span>Gesamt</span><strong><img data-tex="diamond" alt=""><span id="total">0</span></strong></div>
+    <button class="primary" id="checkout" disabled>Zur Bestellung</button>
+    <button class="ghost" id="clear">Warenkorb leeren</button>
+  </div>
+</aside>
+
+<dialog id="dlg">
+  <form class="dlg" id="orderForm" method="dialog" novalidate>
+    <div id="formView" style="display:grid;gap:14px">
+      <h2>Bestellung abschicken</h2>
+      <div class="sum-list" id="sumList"></div>
+      <div class="fee-row" style="font-size:14px;color:#5f7a68">
+        <span>Bearbeitungsgebühr</span>
+        <span id="dlgFee">+0 💎</span>
+      </div>
+      <div class="total"><span>Endsumme</span><strong><img data-tex="diamond" alt=""><span id="sumTotal">0</span></strong></div>
+      <div style="background:#f3f8f2;border:1px solid #cfe0d1;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+        <img id="dlgUserHead" style="width:28px;height:28px;border-radius:4px" src="" alt="">
+        <div>
+          <small style="color:#5f7a68;display:block;font-size:11px">Angemeldet als</small>
+          <strong id="dlgUserName" style="font-size:15px;color:#1f3a2a">Steve</strong>
+        </div>
+      </div>
+      <div style="background:#fff6dd;border:1px solid #e8cf9e;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b470d">
+        💎 <b>Erst bezahlen, dann Items:</b> Du musst zuerst die Diamanten übergeben. Erst wenn sie angekommen sind, bekommst du deine Items.
+      </div>
+      <label>Kommentar <small>(optional, z. B. Übergabezeit)</small>
+        <textarea class="f" id="comment" maxlength="500"></textarea>
+      </label>
+      <div class="msg err" id="err" hidden></div>
+      <div class="row">
+        <button type="button" class="ghost" id="cancel">Zurück</button>
+        <button type="submit" class="primary" id="send">Bestellung senden</button>
+      </div>
+    </div>
+    <div class="success" id="okView" hidden>
+      <img data-tex="diamond" alt="">
+      <h2>Bestellung erfolgreich!</h2>
+      <p style="color:#5f7a68">Deine Bestellung ist angekommen. Übergib zuerst die Diamanten – erst danach bekommst du deine Items!</p>
+      <button type="button" class="primary" id="done" style="width:100%">Super, danke!</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Admin Modal -->
+<dialog id="adminDlg">
+  <div class="dlg" style="max-height:85vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #cfe0d1;padding-bottom:10px">
+      <h2 style="margin:0;font-family:var(--pixel);font-size:18px">👑 Admin: Preise bearbeiten</h2>
+      <button class="x" id="closeAdmin">✕</button>
+    </div>
+
+    <!-- PIN View -->
+    <div id="adminPinView" style="display:grid;gap:12px;padding:12px 0">
+      <p style="margin:0;font-size:13px;color:#5f7a68">Bitte gib deinen geheimen Admin-PIN ein, um die Preise zu ändern:</p>
+      <input type="password" id="adminPin" class="f" placeholder="Secret PIN eingeben..." style="font-size:16px;letter-spacing:3px;text-align:center">
+      <div id="pinErr" class="msg err" hidden>Falscher PIN-Code!</div>
+      <button class="primary" id="checkPinBtn">Entsperren</button>
+    </div>
+
+    <!-- Editor View -->
+    <div id="adminEditorView" style="display:none;flex-direction:column;gap:10px;overflow:hidden;flex:1">
+      <div style="font-size:12px;color:#5f7a68;display:flex;justify-content:space-between;align-items:center">
+        <span>Preise ändern, Items ein- oder ausblenden und neue Items anlegen.</span>
+        <button id="resetPricesBtn" class="ghost" style="padding:4px 8px;font-size:11px">Auf Standard zurücksetzen</button>
+      </div>
+      <div class="nav-tabs" style="margin-left:0;width:fit-content;max-width:100%;flex-wrap:wrap">
+        <button type="button" class="tab-btn active" id="admTabShop">🛒 Shop-Preise</button>
+        <button type="button" class="tab-btn" id="admTabPawn">🏦 Ankaufspreise</button>
+        <button type="button" class="tab-btn" id="admTabNew">➕ Neues Item</button>
+        <button type="button" class="tab-btn" id="admTabOrd">📦 Bestellungen</button>
+        <button type="button" class="tab-btn" id="admTabUsr">👥 Spieler</button>
+        <button type="button" class="tab-btn" id="admTabPts">⭐ Punkte &amp; Aktionen</button>
+      </div>
+      <div id="adminItemsList" style="overflow-y:auto;max-height:50vh;display:grid;gap:8px;padding-right:4px"></div>
+      <div id="adminPawnList" style="overflow-y:auto;max-height:50vh;display:none;gap:8px;padding-right:4px"></div>
+      <div id="adminNewView" style="display:none;gap:10px;grid-auto-rows:max-content;align-content:start;overflow-y:auto;max-height:50vh;padding-right:4px">
+        <label>🔎 Minecraft-Item aus der Liste wählen <small>(Survival-Items, deutsch oder englisch suchen)</small>
+          <input id="mcSearch" class="f" placeholder="z. B. Netherit, diamond, Wolle, Kolben …" autocomplete="off">
+        </label>
+        <div id="mcResults" style="display:grid;grid-auto-rows:max-content;gap:4px;height:210px;min-height:210px;flex:none;overflow-y:auto;padding-right:4px;border:1px solid #d5e2d8;border-radius:10px;padding:4px"></div>
+        <small id="mcInfo" style="color:#5f7a68"></small>
+        <label>Name <input id="newName" class="f" maxlength="40" placeholder="z. B. Diamantblock (x1)" autocomplete="off"></label>
+        <label>Bereich
+          <select id="newArea" class="f"><option value="shop">Shop (Verkauf)</option><option value="pawn">Pfandhaus (Ankauf)</option></select>
+        </label>
+        <label id="newCatRow">Kategorie
+          <select id="newCat" class="f"><option>Tools</option><option>Waffen</option><option>Rüstung</option><option>Redstone</option><option value="Baustoffe" selected>Baustoffe (Holz / Kisten / Eisen)</option></select>
+        </label>
+        <label>Preis in Diamanten <input id="newPrice" type="number" step="0.5" min="0.5" value="1" class="f"></label>
+        <label>Textur <small>(optional, z. B. diamond_block oder block/diamond_block)</small>
+          <input id="newTex" class="f" placeholder="diamond_block" autocomplete="off">
+        </label>
+        <div class="msg err" id="newErr" hidden></div>
+        <div class="msg ok" id="newOk" hidden></div>
+        <button type="button" class="primary" id="newAddBtn">Item hinzufügen</button>
+        <small style="color:#5f7a68">Danach unten auf „Preise speichern“ klicken, damit es für alle sichtbar wird.</small>
+        <hr style="border:0;border-top:1px solid #d5e2d8;width:100%;margin:6px 0">
+        <label>🗂️ Eigene Kategorie anlegen <small>(erscheint als Filter im Shop)</small>
+          <input id="catNew" class="f" maxlength="20" placeholder="z. B. Essen, Farben, Seltenes" autocomplete="off">
+        </label>
+        <button type="button" class="primary" id="catAddBtn">Kategorie hinzufügen</button>
+        <div class="msg err" id="catErr" hidden></div>
+        <div class="msg ok" id="catOk" hidden></div>
+        <div id="catList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <div id="adminUsrView" style="display:none;gap:10px;overflow-y:auto;max-height:50vh;padding-right:4px;align-content:start">
+        <small style="color:#5f7a68">Gesperrte Spieler werden innerhalb von etwa 45 Sekunden abgemeldet und kommen nicht mehr rein. Admins sehen alle Bestellungen und können das Admin-Menü öffnen (sie brauchen weiterhin das Admin-Passwort). Änderungen gelten sofort.</small>
+        <div id="usrList" style="display:grid;gap:8px"></div>
+      </div>
+      <div id="adminOrdView" style="display:none;gap:10px;overflow-y:auto;max-height:50vh;padding-right:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <small style="color:#5f7a68">Status und Nachricht werden sofort gespeichert und den Spielern angezeigt.</small>
+          <button type="button" class="ghost" id="ordRefresh" style="padding:4px 10px;font-size:12px">🔄 Aktualisieren</button>
+        </div>
+        <div id="ordAdminList" style="display:grid;gap:10px"></div>
+      </div>
+      <div id="adminPtsView" style="display:none;gap:14px;overflow-y:auto;max-height:50vh;padding-right:4px">
+        <section style="display:grid;gap:8px;padding:10px;border:1px solid #cfe0d1;border-radius:10px;background:#fff7f0">
+          <b>🔥 Rabatt-Aktion auf Knopfdruck</b>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <input id="salePct" type="number" min="1" max="90" value="20" class="f" style="width:70px"> %
+            <select id="saleTarget" class="f" style="width:auto"><option value="Alle">auf alles</option><option>Tools</option><option>Waffen</option><option>Rüstung</option><option>Redstone</option><option value="Baustoffe">Baustoffe</option></select>
+            <select id="saleDur" class="f" style="width:auto"><option value="30">30 Min</option><option value="60" selected>1 Std</option><option value="180">3 Std</option><option value="1440">24 Std</option><option value="0">bis ich sie beende</option></select>
+          </div>
+          <div style="display:flex;gap:8px"><button type="button" class="primary" id="saleStart" style="padding:8px 14px">Aktion starten &amp; speichern</button><button type="button" class="ghost" id="saleStop">Beenden</button></div>
+          <small id="saleStatus" style="color:#5f7a68"></small>
+        </section>
+        <section style="display:grid;gap:8px">
+          <b>⭐ Punktestände <small style="font-weight:400;color:#5f7a68">(2 Punkte pro ausgegebenem Diamant)</small></b>
+          <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="admAutoPts" checked> Punkte bei Bestellung automatisch gutschreiben</label>
+          <div id="ptsRows" style="display:grid;gap:6px"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;border:1px dashed #cfe0d1;border-radius:8px">
+            <select id="qcPlayer" class="f" style="width:auto"></select>
+            <input id="qcDiamonds" type="number" min="1" placeholder="bezahlte 💎" class="f" style="width:110px">
+            <button type="button" class="ghost" id="qcBtn">Gutschreiben (+2× ⭐)</button>
+            <select id="qrReward" class="f" style="width:auto"></select>
+            <button type="button" class="ghost" id="qrBtn">Einlösung abbuchen</button>
+          </div>
+          <div class="msg ok" id="ptsMsg" hidden></div>
+        </section>
+        <section style="display:grid;gap:6px">
+          <b>🎁 Belohnungen im Punkteshop</b>
+          <div id="rwRows" style="display:grid;gap:6px"></div>
+          <div style="border-top:1px dashed #cfe0d1;padding-top:8px;display:grid;gap:6px">
+            <b style="font-size:13px">➕ Belohnung hinzufügen</b>
+            <input id="rwSearch" class="f" placeholder="Item suchen …" autocomplete="off" maxlength="40">
+            <select id="rwAddSel" class="f"></select>
+            <button type="button" class="ghost" id="rwAddBtn">Als Belohnung hinzufügen</button>
+            <small style="color:#5f7a68">Mit 🗑 neben einer Belohnung entfernst du sie. Danach unten auf „Preise speichern“ klicken.</small>
+          </div>
+        </section>
+      </div>
+      <div class="msg err" id="admWarn" hidden></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="ghost" id="cancelAdmin">Schließen</button>
+        <button class="primary" id="savePricesBtn">Preise speichern</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="pawn-bar" id="pawnBar" hidden>
+  <span id="pawnSummary"></span>
+  <button class="primary sell-btn" id="pawnOpen" type="button">Ankauf abschließen</button>
+</div>
+
+<dialog id="ordDlg">
+  <div class="dlg">
+    <h2>📦 Meine Bestellungen</h2>
+    <div id="ordList" style="display:grid;gap:10px;max-height:60vh;overflow-y:auto;padding-right:4px"></div>
+    <div class="row"><button type="button" class="ghost" id="ordAdminBtn" style="font-size:12px">🔐 Admin: alle Bestellungen verwalten</button><button type="button" class="ghost" id="ordClose">Schließen</button></div>
+  </div>
+</dialog>
+
+<dialog id="pawnDlg">
+  <form class="dlg" id="pawnForm" method="dialog" novalidate>
+    <div id="pawnFormView" style="display:grid;gap:14px">
+      <h2>🏦 Ankauf abschicken</h2>
+      <div class="sum-list" id="pawnList"></div>
+      <div class="total"><span>Auszahlung</span><strong><img data-tex="diamond" alt=""><span id="pawnTotal">0</span></strong></div>
+      <div style="background:#fcf6ea;border:1px solid #e8cf9e;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b470d">
+        Die Diamanten bekommst du bei der Übergabe der Items auf dem Server.
+      </div>
+      <label>Kommentar <small>(optional, z. B. Übergabezeit)</small>
+        <textarea class="f" id="pawnComment" maxlength="500"></textarea>
+      </label>
+      <div class="msg err" id="pawnErr" hidden></div>
+      <div class="row">
+        <button type="button" class="ghost" id="pawnCancel">Zurück</button>
+        <button type="submit" class="primary sell-btn" id="pawnSend">Ankauf senden</button>
+      </div>
+    </div>
+    <div class="success" id="pawnOk" hidden>
+      <img data-tex="diamond" alt="">
+      <h2>Ankauf gesendet!</h2>
+      <p style="color:#5f7a68">Deine Anfrage ist im Discord angekommen. Bring die Items zur Übergabe mit.</p>
+      <button type="button" class="primary" id="pawnDone" style="width:100%">Super, danke!</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ====== Einstellungen ======
+const WEBHOOK_URL = 'https://discord.com/api/webhooks/1563558886240428145/LwsI6HC1jZuP9rpMbF7lS1vRFuYYjX7VAqUT28V73TECi1ejdFwnlRiRR9ZPdLOJ9Xtg';
+
+// Profilbild des Webhooks in Discord (öffentliche Bild-URL, am besten quadratisch). Zum Ändern einfach eine andere URL eintragen.
+const WEBHOOK_AVATAR = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.10/assets/minecraft/textures/item/diamond.png';
+
+// Webhook für den Pfandhaus-Ankauf (anderer Discord-Kanal). Hier die URL des zweiten Kanals eintragen.
+// Solange das Feld leer ist, geht der Ankauf an den normalen Bestell-Kanal.
+const PAWN_WEBHOOK_URL = '';
+// Optional: eigener Kanal für Punkte-Einlösungen (leer = Ankauf-Kanal bzw. Bestell-Kanal)
+const POINTS_WEBHOOK_URL = '';
+const isHook = u => /^https:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/api\/(?:v\d+\/)?webhooks\/\d+\/[\w-]+/.test((u||'').trim());
+
+// Geheimer PIN-Code für den Preis-Editor
+// SHA-256 (synchron) für gehashte Zugangsdaten – keine Klartext-Passwörter mehr im Code
+function sha256hex(str){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const b=[...new TextEncoder().encode(str)], l=b.length*8; b.push(0x80);
+  while(b.length%64!==56) b.push(0);
+  for(let i=7;i>=0;i--) b.push(i>3?0:(l>>>(i*8))&255);
+  let h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const w=new Array(64), rr=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let o=0;o<b.length;o+=64){
+    for(let i=0;i<16;i++) w[i]=(b[o+i*4]<<24)|(b[o+i*4+1]<<16)|(b[o+i*4+2]<<8)|b[o+i*4+3];
+    for(let i=16;i<64;i++){ const s0=rr(w[i-15],7)^rr(w[i-15],18)^(w[i-15]>>>3), s1=rr(w[i-2],17)^rr(w[i-2],19)^(w[i-2]>>>10); w[i]=(w[i-16]+s0+w[i-7]+s1)|0; }
+    let [a,bb,c,d,e,f,g,hh]=h;
+    for(let i=0;i<64;i++){
+      const t1=(hh+(rr(e,6)^rr(e,11)^rr(e,25))+((e&f)^(~e&g))+K[i]+w[i])|0, t2=((rr(a,2)^rr(a,13)^rr(a,22))+((a&bb)^(a&c)^(bb&c)))|0;
+      hh=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;
+    }
+    h=[(h[0]+a)|0,(h[1]+bb)|0,(h[2]+c)|0,(h[3]+d)|0,(h[4]+e)|0,(h[5]+f)|0,(h[6]+g)|0,(h[7]+hh)|0];
+  }
+  return h.map(x=>(x>>>0).toString(16).padStart(8,'0')).join('');
+}
+function hashCred(name, secret){ let h = 'alexshop|' + name + '|' + secret; for(let i=0;i<5000;i++) h = sha256hex(h); return h; }
+const ADMIN_HASH = '37412fb65bf11858de61517561e7b39a48b2c5bb5b8e075976fd57b134d05a7c';   // Hash des Admin-Passworts (Klartext steht nicht im Code)
+
+// Skin-Head URL mit automatischem Fallback
+// 2D Skin-Head URL (klassischer 2D Helm-Kopf wie im Spiel)
+function getHeadUrl(name, size=32){
+  const clean = encodeURIComponent((name||'Steve').trim());
+  return `https://cravatar.eu/helmavatar/${clean}/${size}`;
+}
+
+function setHeadImg(imgEl, name, size=32){
+  const clean = encodeURIComponent((name||'Steve').trim());
+  imgEl.onerror = () => {
+    imgEl.onerror = () => {
+      imgEl.src = `https://mc-heads.net/avatar/${clean}/${size}`;
+    };
+    imgEl.src = `https://minotar.net/helm/${clean}/${size}.png`;
+  };
+  imgEl.src = getHeadUrl(clean, size);
+}
+const WHITELIST = [
+  'Zebureki',
+  'Kermititfritte',
+  'Snakeonx',
+  'la_mossa',
+  'Ezpkapinew',
+  'Alex_6868'
+];
+
+// Spieler-Zugänge als Hash (Name → Hash)
+const HASHES = {
+  'Zebureki':'54b5db57dab05f43b34c5a01fcb89b442ffdab1be945e1b3f3ef54ec57b3058d',
+  'Kermititfritte':'b65f4142da6b5ccdd62a7a92dfb0b222b6e7530247874c624fbe999aee01abee',
+  'Snakeonx':'dd9063c650903ae3d159bdeebfe9f8e6e7ae39179a307feb8f56f62213ba7141',
+  'la_mossa':'639d0fd3434b352800207d84802e6a316dff2b6d4dcf94928ac51dd4287fe546',
+  'Ezpkapinew':'9872a42e1e89a1d260191dbf719b21a8f32cb2d20d4f648a14e942c037c4d6ab',
+  'Alex_6868':'49e61faae94d1a2d999527dcdec212d80489dc6fa4fbdcd4fe9f347622e89d58'
+};
+try{ localStorage.removeItem('alexshop_pin'); }catch(e){}   // alte Klartext-PINs entfernen
+const pinOk = (name, pin) => !!name && HASHES[name] !== undefined && HASHES[name] === hashCred(name, String(pin||'').trim());
+let loginFails = 0, loginLockUntil = Number(localStorage.getItem('alexshop_loglock')) || 0;
+
+let currentUser = null;
+
+// Cloud-Datenbank (JSONBin) für Live-Preise für ALLE Freunde
+const CLOUD_BIN_ID = '6adcd14fffd5d160538882dc';
+const CLOUD_API_KEY = '$2a$10$RZpqcWRWu92rA6AKoJ9p5ekbRNKou7VbhqveOOBnOVUz9WF1dzY3u';
+
+const TEX_SRC = [
+  'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.1/assets/minecraft/textures/',
+  'https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/',
+  'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/'
+];
+
+// Fallback Canvas-Renderer für alle Standard-Texturen
+const PAL = {
+  d:{a:'#c9fff7',b:'#4de8d8',c:'#1d9c97',o:'#0d3b40',s:'#9a6a35',t:'#6b4522'},
+  n:{a:'#7d7079',b:'#4b414a',c:'#2f282e',o:'#161216',s:'#9a6a35',t:'#6b4522'},
+  r:{a:'#ff8b80',b:'#e71d1d',c:'#9c0d0d',o:'#420000',s:'#5a5a5a',t:'#3a3a3a'},
+  iron:{a:'#ffffff',b:'#dcdcdc',c:'#a5a5a5',o:'#4a4a4a',s:'#9a6a35',t:'#6b4522'},
+  wood:{a:'#be9058',b:'#9c6f3b',c:'#734e26',o:'#3e260e',s:'#9c6f3b',t:'#734e26'},
+  bag:{a:'#d9954f',b:'#b0702f',c:'#7c4b1f',o:'#2e1b0c',s:'#b0702f',t:'#7c4b1f'}
+};
+
+function renderFallback(type, palKey='d'){
+  const cv=document.createElement('canvas'); cv.width=cv.height=16; const cx=cv.getContext('2d');
+  if(String(type).includes('nether_star')){   // Nether-Stern-Ersatzbild
+    cx.fillStyle='#8f8f9c'; cx.fillRect(7,1,2,14); cx.fillRect(1,7,14,2); cx.fillRect(4,4,8,8);
+    cx.fillStyle='#f2f2f7'; cx.fillRect(7,2,2,12); cx.fillRect(2,7,12,2); cx.fillRect(5,5,6,6);
+    cx.fillStyle='#fff6b0'; cx.fillRect(6,6,4,4);
+    return cv.toDataURL();
+  }
+  const p = PAL[palKey]||PAL.d;
+  cx.fillStyle = p.b; cx.fillRect(3,3,10,10);
+  cx.fillStyle = p.a; cx.fillRect(3,3,10,2); cx.fillRect(3,3,2,10);
+  cx.fillStyle = p.c; cx.fillRect(11,3,2,10); cx.fillRect(3,11,10,2);
+  return cv.toDataURL();
+}
+
+const REAL = {}, TRIED = {};
+// Kisten haben keine einfache Textur-Datei (nur ein Modell) → selbst gezeichnete 16×16-Icons
+function drawBox(c){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 16; const x = cv.getContext('2d');
+  const R = (col,a,b,w,h)=>{ x.fillStyle = col; x.fillRect(a,b,w,h); };
+  R(c.o,1,3,14,12); R(c.b,2,4,12,10); R(c.a,2,4,12,3); R(c.c,2,12,12,2); R(c.o,1,7,14,1); R(c.d,2,8,12,1);
+  R(c.o,6,6,4,5); R(c.l,7,7,2,3); R(c.o,7,9,2,1);
+  if(c.x){ R(c.x,7,8,2,1); }
+  return cv.toDataURL();
+}
+const BOXES = {
+  chest:{o:'#3b2410',b:'#a0702e',a:'#c8924a',c:'#7d5522',d:'#6b4522',l:'#e8d56a'},
+  trapped_chest:{o:'#3b2410',b:'#a0702e',a:'#c8924a',c:'#7d5522',d:'#6b4522',l:'#d9d9d9',x:'#e03b3b'},
+  ender_chest:{o:'#0b1f1d',b:'#1b5f58',a:'#2a8277',c:'#124540',d:'#0e3430',l:'#4bd8a0'},
+  shulker_box:{o:'#4a2d55',b:'#8e5f9a',a:'#b085bb',c:'#6e4579',d:'#5a3764',l:'#e9d6ee'}
+};
+Object.keys(BOXES).forEach(k=>{ const u = drawBox(BOXES[k]); REAL[k] = u; REAL['mc_'+k] = u; });
+
+function getTexUrl(path, n=0){ return TEX_SRC[n] + path + '.png'; }
+
+function loadTex(k, path, n=0){
+  const im = new Image(); im.referrerPolicy = 'no-referrer';
+  im.onload = ()=>{
+    REAL[k] = im.src;
+    document.querySelectorAll(`img[data-k="${k}"]`).forEach(i=>{ i.src = im.src; });
+  };
+  im.onerror = ()=>{
+    if(n+1 < TEX_SRC.length) loadTex(k, path, n+1);
+    else if(!REAL[k]) REAL[k] = renderFallback(k, k.includes('nether')?'n':k.includes('red')?'r':'d');
+  };
+  im.src = getTexUrl(path, n);
+}
+
+function ico(k, path){
+  if(REAL[k]) return REAL[k];
+  if(!TRIED[k]){
+    TRIED[k] = 1;
+    loadTex(k, path||('item/'+k));
+  }
+  return renderFallback(k, k.includes('nether')?'n':k.includes('red')?'r':'d');
+}
+
+// ====== Sortiment ======
+const ENCH = {'Effizienz V':4,'Haltbarkeit III':3,'Glück III':5,'Behutsamkeit':3,'Reparatur':6,'Schärfe V':4,'Plünderung III':4,'Schutz IV':5,'Atmung III':2,'Wasseraffinität':2,'Federfall IV':3,'Tiefenläufer III':3};
+const EXCL = {'Glück III':['Behutsamkeit'],'Behutsamkeit':['Glück III']};
+
+const ITEMS = [
+  // Diamant-Ausrüstung
+  {id:'diamond_pickaxe',tex:'item/diamond_pickaxe',name:'Diamant-Spitzhacke',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:10,rar:'Selten'},
+  {id:'diamond_axe',tex:'item/diamond_axe',name:'Diamant-Axt',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Schärfe V','Reparatur'],price:10,rar:'Selten'},
+  {id:'diamond_shovel',tex:'item/diamond_shovel',name:'Diamant-Schaufel',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:6,rar:'Selten'},
+  {id:'diamond_hoe',tex:'item/diamond_hoe',name:'Diamant-Hacke',cat:'Tools',tier:'d',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:6,rar:'Selten'},
+  {id:'diamond_sword',tex:'item/diamond_sword',name:'Diamant-Schwert',cat:'Waffen',tier:'d',ench:['Schärfe V','Plünderung III','Haltbarkeit III','Reparatur'],price:8,rar:'Selten'},
+  {id:'diamond_helmet',tex:'item/diamond_helmet',name:'Diamant-Helm',cat:'Rüstung',tier:'d',ench:['Schutz IV','Atmung III','Wasseraffinität','Haltbarkeit III','Reparatur'],price:14,rar:'Selten'},
+  {id:'diamond_chestplate',tex:'item/diamond_chestplate',name:'Diamant-Brustpanzer',cat:'Rüstung',tier:'d',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:22,rar:'Selten'},
+  {id:'diamond_leggings',tex:'item/diamond_leggings',name:'Diamant-Hose',cat:'Rüstung',tier:'d',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:18,rar:'Selten'},
+  {id:'diamond_boots',tex:'item/diamond_boots',name:'Diamant-Stiefel',cat:'Rüstung',tier:'d',ench:['Schutz IV','Federfall IV','Tiefenläufer III','Haltbarkeit III','Reparatur'],price:12,rar:'Selten'},
+
+  // Netherite-Ausrüstung
+  {id:'netherite_pickaxe',tex:'item/netherite_pickaxe',name:'Netherite-Spitzhacke',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:64,rar:'Episch'},
+  {id:'netherite_axe',tex:'item/netherite_axe',name:'Netherite-Axt',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Schärfe V','Reparatur'],price:64,rar:'Episch'},
+  {id:'netherite_shovel',tex:'item/netherite_shovel',name:'Netherite-Schaufel',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:48,rar:'Episch'},
+  {id:'netherite_hoe',tex:'item/netherite_hoe',name:'Netherite-Hacke',cat:'Tools',tier:'n',ench:['Effizienz V','Haltbarkeit III','Glück III','Behutsamkeit','Reparatur'],price:48,rar:'Episch'},
+  {id:'netherite_sword',tex:'item/netherite_sword',name:'Netherite-Schwert',cat:'Waffen',tier:'n',ench:['Schärfe V','Plünderung III','Haltbarkeit III','Reparatur'],price:72,rar:'Episch'},
+  {id:'netherite_helmet',tex:'item/netherite_helmet',name:'Netherite-Helm',cat:'Rüstung',tier:'n',ench:['Schutz IV','Atmung III','Wasseraffinität','Haltbarkeit III','Reparatur'],price:96,rar:'Episch'},
+  {id:'netherite_chestplate',tex:'item/netherite_chestplate',name:'Netherite-Brustpanzer',cat:'Rüstung',tier:'n',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:144,rar:'Episch'},
+  {id:'netherite_leggings',tex:'item/netherite_leggings',name:'Netherite-Hose',cat:'Rüstung',tier:'n',ench:['Schutz IV','Haltbarkeit III','Reparatur'],price:128,rar:'Episch'},
+  {id:'netherite_boots',tex:'item/netherite_boots',name:'Netherite-Stiefel',cat:'Rüstung',tier:'n',ench:['Schutz IV','Federfall IV','Tiefenläufer III','Haltbarkeit III','Reparatur'],price:80,rar:'Episch'},
+
+  // Redstone & Mechanik
+  {id:'redstone_dust',tex:'item/redstone',name:'Redstone-Staub (x64)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'redstone_block',tex:'block/redstone_block',name:'Redstone-Block (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'redstone_torch',tex:'item/redstone_torch',name:'Redstone-Fackel (x16)',cat:'Redstone',tier:'r',ench:[],price:1,rar:'Redstone'},
+  {id:'repeater',tex:'item/repeater',name:'Redstone-Verstärker (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'comparator',tex:'item/comparator',name:'Redstone-Komparator (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'piston',tex:'block/piston_top_sticky',name:'Kolben (x8)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'sticky_piston',tex:'block/piston_top_sticky',name:'Klebriger Kolben (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'observer',tex:'block/observer_front',name:'Beobachter (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'dispenser',tex:'block/dispenser_front',name:'Werfer (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'dropper',tex:'block/dropper_front',name:'Spender (x8)',cat:'Redstone',tier:'r',ench:[],price:1,rar:'Redstone'},
+  {id:'target',tex:'block/target_top',name:'Zielblock (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+
+  // Kisten, Hopper, Eisen & Holz
+  {id:'chest',tex:'item/chest',name:'Kiste (x4)',cat:'Baustoffe',tier:'b',ench:[],price:1,rar:'Alltag'},
+  {id:'trapped_chest',tex:'item/trapped_chest',name:'Redstone-Kiste (x4)',cat:'Redstone',tier:'r',ench:[],price:2,rar:'Redstone'},
+  {id:'barrel',tex:'block/barrel_top',name:'Fass (x4)',cat:'Baustoffe',tier:'b',ench:[],price:1,rar:'Alltag'},
+  {id:'hopper',tex:'item/hopper',name:'Trichter / Hopper',cat:'Baustoffe',tier:'b',ench:[],price:1,minQty:1,rar:'Mechanik'},
+  {id:'iron_ingot',tex:'item/iron_ingot',name:'Eisenbarren (x16)',cat:'Baustoffe',tier:'b',ench:[],price:2,rar:'Ressource'},
+  {id:'iron_block',tex:'block/iron_block',name:'Eisenblock (x2)',cat:'Baustoffe',tier:'b',ench:[],price:2,rar:'Ressource'},
+  {id:'oak_log',tex:'block/oak_log',name:'Eichenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'spruce_log',tex:'block/spruce_log',name:'Fichtenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'dark_oak_log',tex:'block/dark_oak_log',name:'Schwarzeichenstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'},
+  {id:'cherry_log',tex:'block/cherry_log',name:'Kirschholzstamm (x64)',cat:'Baustoffe',tier:'b',ench:[],price:3,rar:'Holz'}
+];
+
+// Pfandhaus (Ankauf): Für diese Ressourcen zahlen wir Diamanten. Preise kannst du im Admin-Editor ändern.
+const PAWN = [   // [Schlüssel, Name, Textur, Ankaufspreis, passender Shop-Artikel (für die Gewinnkontrolle)]
+  ['coal','Kohle (x64)','item/coal',1],['copper','Kupferbarren (x32)','item/copper_ingot',1],
+  ['iron','Eisenbarren (x16)','item/iron_ingot',1,'iron_ingot'],['gold','Goldbarren (x16)','item/gold_ingot',2],
+  ['redstone','Redstone-Staub (x64)','item/redstone',1,'redstone_dust'],['lapis','Lapislazuli (x32)','item/lapis_lazuli',1],
+  ['quartz','Netherquarz (x32)','item/quartz',1],['emerald','Smaragd (x8)','item/emerald',2],
+  ['diamond','Diamant (x4)','item/diamond',3],['scrap','Netherit-Schrott (x2)','item/netherite_scrap',4],
+  ['oak','Eichenstamm (x64)','block/oak_log',1.5,'oak_log'],['spruce','Fichtenstamm (x64)','block/spruce_log',1.5,'spruce_log']
+];
+PAWN.forEach(([k,n,tex,price,pair])=>ITEMS.push({id:'pawn_'+k,tex,name:n,cat:'Pfand',tier:'p',ench:[],price,rar:'Ankauf',pawn:true,pair}));
+
+const BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+
+// ===== Punkte & Aktionen =====
+const EARN = 2;     // Punkte pro ausgegebenem Diamanten
+let AUTOPTS = true;  // automatische Gutschrift bei Bestellung (Admin kann abschalten)
+const MIN_PPV = 6;  // Mindest-Punktekosten pro Diamant Warenwert (Gewinn-Schutz: Spieler muss >= 3x den Wert ausgeben)
+const DEF_PPV = 8;  // Standard: 8 Punkte pro Diamant Warenwert, also gibt der Spieler 4x den Wert aus
+const DEFAULT_REWARDS = ['iron_ingot','redstone_dust','oak_log','chest','hopper','diamond_sword','diamond_pickaxe','netherite_sword'];
+let REWARD_IDS = DEFAULT_REWARDS.slice();
+let POINTS = {}, REWARD_CFG = {}, SALE = null;
+const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
+const saleActive = () => !!(SALE && SALE.pct > 0 && (!SALE.endsAt || SALE.endsAt > Date.now()));
+const saleApplies = i => saleActive() && !i.pawn && (SALE.target === 'Alle' || SALE.target === i.cat);
+function salePrice(i){
+  if(!saleApplies(i)) return i.price;
+  let p = Math.max(0.5, Math.ceil(i.price * (1 - SALE.pct/100) * 2) / 2);
+  ITEMS.forEach(x=>{ if(x.pair === i.id) p = Math.max(p, x.price + 0.5); });   // nie unter den Ankaufspreis
+  return Math.min(p, i.price);
+}
+const rewardCost = id => { const c = REWARD_CFG[id]; return (c && c.cost > 0) ? c.cost : Math.ceil(BY_ID[id].price * DEF_PPV); };
+const rewardActive = id => BY_ID[id] && !BY_ID[id].hidden && !(REWARD_CFG[id] && REWARD_CFG[id].active === false);
+
+// Kategorien: feste + vom Admin angelegte
+const BASE_CATS = [['Tools','Tools'],['Waffen','Waffen'],['Rüstung','Rüstung'],['Redstone','Redstone'],['Baustoffe','Holz / Kisten / Eisen']];
+let CATS = [];
+const escH = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const catValid = c => BASE_CATS.some(b=>b[0]===c) || CATS.includes(c);
+function fillCatSelects(){
+  [['#newCat'],['#saleTarget']].forEach(([sel])=>{
+    const el = $(sel); if(!el) return;
+    const cur = el.value;
+    el.querySelectorAll('option[data-cc]').forEach(o=>o.remove());
+    CATS.forEach(c=>{ const o = document.createElement('option'); o.value = c; o.textContent = c; o.dataset.cc = '1'; el.appendChild(o); });
+    if([...el.options].some(o=>o.value===cur)) el.value = cur;
+  });
+}
+
+// Sortiment-Änderungen aus dem Admin-Menü: ausgeblendete und selbst angelegte Items
+// ===== Zugriff: Besitzer, Admins, gesperrte Spieler =====
+const OWNER = 'Alex_6868';
+let BLOCKED = [], ADMINS = [];
+const nameList = a => (Array.isArray(a) ? a : []).filter(n=>WHITELIST.includes(n));
+function applyAccess(map){
+  BLOCKED = nameList(map && map.__blocked).filter(n=>n !== OWNER);
+  ADMINS = nameList(map && map.__admins).filter(n=>n !== OWNER && !BLOCKED.includes(n));
+}
+const isAdminUser = () => !!currentUser && (currentUser === OWNER || ADMINS.includes(currentUser));
+function refreshAdminUi(){ const b = document.getElementById('ordAdminBtn'); if(b) b.hidden = !isAdminUser(); }
+function kickBlocked(){
+  document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+  $('#logoutBtn').onclick();
+  const e = $('#loginError'); e.textContent = '🚫 Dein Zugang wurde gesperrt. Bitte wende dich an den Admin.'; e.hidden = false;
+}
+const cleanTxt = (t, n) => String(t == null ? '' : t).replace(/[<>&"'`\\]/g, '').trim().slice(0, n);
+const numIn = (v, min, max, def) => { v = Number(v); return Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : def; };
+function applyCatalog(map){
+  if(!map || typeof map !== 'object') return;
+  POINTS = {};
+  if(isObj(map.__points)) WHITELIST.forEach(n=>{ if(map.__points[n] !== undefined) POINTS[n] = Math.floor(numIn(map.__points[n], 0, 10000000, 0)); });
+
+  AUTOPTS = map.__autopts !== false;
+  ORDERS = Array.isArray(map.__orders) ? map.__orders.filter(isObj) : [];
+  applyAccess(map);
+  SALE = (isObj(map.__sale) && Number(map.__sale.pct) > 0) ? {pct: Math.floor(numIn(map.__sale.pct, 1, 90, 1)), target: cleanTxt(map.__sale.target, 30) || 'Alle', endsAt: Math.floor(numIn(map.__sale.endsAt, 0, 4102444800000, 0))} : null;
+
+  CATS = (Array.isArray(map.__cats) ? map.__cats : []).filter(c=>typeof c === 'string').map(c=>cleanTxt(c,20)).filter(c=>c.length>1).slice(0,20);
+  const hidden = new Set(Array.isArray(map.__hidden) ? map.__hidden : []);
+  for(let i = ITEMS.length-1; i >= 0; i--){
+    if(ITEMS[i].custom){ delete BY_ID[ITEMS[i].id]; ITEMS.splice(i,1); }
+  }
+  (Array.isArray(map.__custom) ? map.__custom : []).forEach(c=>{
+    if(!isObj(c) || !/^[A-Za-z0-9_]{1,40}$/.test(String(c.id)) || BY_ID[c.id]) return;
+    const pawn = !!c.pawn, price = numIn(c.price, 0.1, 100000, 1);
+    const it = {id:String(c.id), tex:/^[a-z0-9_\/]{1,60}$/.test(String(c.tex||'')) ? c.tex : ('item/'+c.id), name:cleanTxt(c.name||'Neues Item', 60) || 'Neues Item',
+      cat: pawn ? 'Pfand' : (catValid(c.cat) ? c.cat : 'Baustoffe'), tier: pawn ? 'p' : 'b', ench:[], price,
+      rar: pawn ? 'Ankauf' : 'Eigenes Item', custom:true, pawn};
+    ITEMS.push(it); BY_ID[it.id] = it;
+  });
+  fillCatSelects(); renderFilters(); if(typeof renderCatAdmin === 'function') renderCatAdmin();
+  ITEMS.forEach(i=>{ i.hidden = hidden.has(i.id); });
+  REWARD_IDS = Array.isArray(map.__rewardIds)
+    ? map.__rewardIds.filter((id,ix,a)=>typeof id === 'string' && BY_ID[id] && !BY_ID[id].pawn && a.indexOf(id) === ix).slice(0,60)
+    : DEFAULT_REWARDS.slice();
+  REWARD_CFG = {};
+  if(isObj(map.__rewards)) REWARD_IDS.forEach(id=>{ const c = map.__rewards[id]; if(isObj(c)) REWARD_CFG[id] = {cost: Math.floor(numIn(c.cost, 0, 10000000, 0)), active: c.active !== false}; });
+  refreshAdminUi();
+  if(currentUser && BLOCKED.includes(currentUser)) kickBlocked();
+}
+// Entfernt Waren aus Warenkorb und Ankauf-Liste, die ausgeblendet oder gelöscht wurden
+function pruneCarts(){
+  Object.entries(state.cart).forEach(([k,l])=>{ const it = BY_ID[l.id]; if(!it || it.hidden) delete state.cart[k]; });
+  Object.keys(state.sell).forEach(id=>{ const it = BY_ID[id]; if(!it || it.hidden) delete state.sell[id]; });
+}
+
+// Gespeicherte Custom-Preise (zuerst lokal, dann aus der Cloud laden)
+function applyPriceMap(map){
+  if(!map || typeof map !== 'object') return;
+  Object.entries(map).forEach(([id, price])=>{
+    if(BY_ID[id] && typeof price === 'number' && Number.isFinite(price) && price > 0 && price <= 100000) BY_ID[id].price = price;
+  });
+}
+
+try {
+  const lm = JSON.parse(localStorage.getItem('alexshop_custom_prices')||'{}');
+  applyCatalog(lm); applyPriceMap(lm);
+} catch(e) {}
+
+// Live aus der Cloud laden
+async function syncPricesFromCloud(){
+  if(!CLOUD_BIN_ID || !CLOUD_API_KEY) return;
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': CLOUD_API_KEY }
+    });
+    if(res.ok){
+      const data = await res.json();
+      if(data && data.record){
+        applyCatalog(data.record);
+        applyPriceMap(data.record);
+        pruneCarts();
+        try { localStorage.setItem('alexshop_custom_prices', JSON.stringify(data.record)); } catch(e){}
+        renderGrid(); renderPawn(); renderCart(); updatePtsChip(); renderPts(); tickSale();
+      }
+    }
+  } catch(err) {
+    console.warn('Cloud-Preise konnten nicht geladen werden, verwende lokale/Standard-Preise', err);
+  }
+}
+
+// Preisfindung: Grundpreis + Verzauberungen (ohne Gebühr)
+const baseUnit = (id,ens=[]) => salePrice(BY_ID[id]) + ens.reduce((s,e)=>s+(ENCH[e]||0),0);
+
+// Gebühr: 1 Diamant pro Stück NUR bei Werkzeugen (Tools)
+const itemFee = id => (BY_ID[id] && BY_ID[id].cat === 'Tools') ? 1 : 0;
+
+const state = {cat:'Alle', sub:'Alle', qty:{}, sel:{}, cart:{}, page:'shop', pqty:{}, sell:{}};
+const $ = s => document.querySelector(s);
+const nf = n => n.toLocaleString('de-DE');
+const sanitize = (v, min=1) => Math.max(min, Math.floor(Number(v)) || min);
+const ensOf = id => state.sel[id] || [];
+
+const NS = () => `<img class="ns" data-k="nether_star" src="${ico('nether_star','item/nether_star')}" alt="Punkte">`;
+function applyStaticTex(){
+  document.querySelectorAll('img[data-tex="nether_star"]').forEach(img => {
+    img.src = ico('nether_star','item/nether_star');
+    img.dataset.k = 'nether_star';
+  });
+  document.querySelectorAll('img[data-tex="diamond"]').forEach(img => {
+    img.src = ico('diamond','item/diamond');
+    img.dataset.k = 'diamond';
+  });
+  document.querySelectorAll('img[data-tex="bundle"]').forEach(img => {
+    img.src = ico('bundle','item/bundle');
+    img.dataset.k = 'bundle';
+  });
+}
+
+// ====== Filter Chips ======
+function renderFilters(){
+  const cats = [['Alle','Alle'], ...BASE_CATS, ...CATS.map(c=>[c,c])];
+  if(state.cat !== 'Alle' && !cats.some(c=>c[0]===state.cat)) state.cat = 'Alle';
+  $('#catChips').innerHTML = cats.map(([v,l])=>`<button class="chip" data-v="${escH(v)}" aria-pressed="${state.cat===v}">${escH(l)}</button>`).join('');
+  $('#catChips').onclick = e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    state.cat = b.dataset.v; renderFilters(); renderGrid();
+  };
+}
+
+// ====== Shop Raster ======
+function priceHtml(i){
+  const ens = ensOf(i.id), sp = salePrice(i), extra = baseUnit(i.id,ens) - sp;
+  let pStr = (baseUnit(i.id,ens) === 0.5) ? '0,5' : nf(baseUnit(i.id,ens));
+  if(sp < i.price) pStr = `<s style="opacity:.55;font-weight:500">${nf(i.price + extra)}</s> ${pStr}`;
+  const minNote = i.minQty ? ` • Min. ${i.minQty} Stk.` : '';
+  const feeInfo = i.cat === 'Tools' ? ' (+1💎 Gebühr)' : '';
+  return `<img data-k="diamond" src="${ico('diamond','item/diamond')}" alt="">${pStr} Diamanten` +
+    (extra ? `<small>Grundpreis ${sp===0.5?'0,5':nf(sp)} + Verzauberung ${nf(extra)}${feeInfo}${minNote}</small>` : `<small>${i.cat==='Tools'?'+1💎 Bearbeitungsgebühr':'Ohne Zusatzgebühr'}${minNote}</small>`);
+}
+
+function renderGrid(){
+  const list = ITEMS.filter(i=>!i.pawn&&!i.hidden&&(state.cat==='Alle'||i.cat===state.cat)&&matchQ(i));
+  $('#count').textContent = list.length + (list.length===1?' Item':' Items');
+  
+  $('#grid').innerHTML = list.map(i=>{
+    const min = i.minQty || 1;
+    const q = state.qty[i.id] || min;
+    const ens = ensOf(i.id);
+    return `<article class="card ${i.tier}" data-id="${i.id}">
+      <div class="art"><span class="rar ${i.tier==='d'?'rare':i.tier==='n'?'epic':i.tier==='r'?'red':''}">${i.rar}</span>
+        <img data-k="${i.id}" src="${ico(i.id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body">
+        <h3>${i.name}</h3>
+        ${i.tier==='n'?'<p class="note">Feuerfest, verbrennt nicht in Lava.</p>':''}
+        ${i.minQty ? `<p class="note" style="color:var(--diamond-deep);font-weight:600">⚡ Mindestbestellmenge: ${i.minQty} Stück</p>` : ''}
+        ${i.ench.length ? `
+        <details class="opt"${ens.length?' open':''}>
+          <summary>Verzauberungen <small>(optional)</small></summary>
+          ${i.ench.map(e=>`<label class="eo"><input type="checkbox" data-e="${e}"${ens.includes(e)?' checked':''}><span>${e}</span><em>+${ENCH[e]}</em></label>`).join('')}
+        </details>` : ''}
+        <div class="price">${priceHtml(i)}</div>
+        <div class="quick-qty" aria-label="Schnellauswahl Menge">
+          <span style="font-size:11px;color:#5f7a68;font-weight:600">Menge:</span>
+          <button type="button" class="qbtn ${q===1?'active':''}" data-setq="1">1</button>
+          <button type="button" class="qbtn ${q===16?'active':''}" data-setq="16">16</button>
+          <button type="button" class="qbtn ${q===32?'active':''}" data-setq="32">32</button>
+          <button type="button" class="qbtn ${q===64?'active':''}" data-setq="64">64</button>
+        </div>
+        <div class="buy">
+          <div class="qty">
+            <button type="button" data-act="minus" aria-label="Weniger">−</button>
+            <input type="number" min="${min}" step="1" inputmode="numeric" value="${q}" aria-label="Menge ${i.name}">
+            <button type="button" data-act="plus" aria-label="Mehr">+</button>
+          </div>
+          <button type="button" class="add" data-act="add">In den Warenkorb</button>
+        </div>
+      </div></article>`;
+  }).join('');
+}
+
+// Particle Flight Animation zum Warenkorb
+function flyToCart(startEl, imgSrc){
+  const cartBtn = $('#openCart');
+  const startRect = startEl.getBoundingClientRect();
+  const endRect = cartBtn.getBoundingClientRect();
+
+  const particle = document.createElement('img');
+  particle.src = imgSrc;
+  particle.className = 'flying-particle';
+  particle.style.left = startRect.left + (startRect.width/2 - 18) + 'px';
+  particle.style.top = startRect.top + (startRect.height/2 - 18) + 'px';
+  document.body.appendChild(particle);
+
+  requestAnimationFrame(()=>{
+    particle.style.left = endRect.left + (endRect.width/2 - 18) + 'px';
+    particle.style.top = endRect.top + (endRect.height/2 - 18) + 'px';
+    particle.style.transform = 'scale(0.3) rotate(360deg)';
+    particle.style.opacity = '0.3';
+  });
+
+  setTimeout(()=>{ particle.remove(); }, 600);
+}
+
+$('#grid').addEventListener('click',e=>{
+  const qBtn = e.target.closest('button[data-setq]');
+  if(qBtn){
+    const card = qBtn.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+    const item = BY_ID[id];
+    const min = item.minQty || 1;
+    const targetQ = Math.max(min, parseInt(qBtn.dataset.setq) || 1);
+    inp.value = targetQ; state.qty[id] = targetQ;
+    card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', b === qBtn));
+    return;
+  }
+
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+  const item = BY_ID[id];
+  const min = item.minQty || 1;
+  let q = sanitize(inp.value, min);
+  if(b.dataset.act==='plus') q++;
+  if(b.dataset.act==='minus') q = Math.max(min, q-1);
+  inp.value = q; state.qty[id] = q;
+  card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.setq) === q));
+
+  if(b.dataset.act==='add'){
+    if(q < min){
+      toast(`⚠️ Mindestbestellmenge für ${item.name}: ${min} Stück!`);
+      q = min; inp.value = min;
+      return;
+    }
+    const ens = ensOf(id).slice(), key = id+'|'+ens.join(',');
+    state.cart[key] = {id, ens, q:(state.cart[key]?state.cart[key].q:0)+q};
+    state.qty[id] = min; inp.value = min;
+    
+    // Animation
+    b.classList.add('done'); b.textContent = 'Hinzugefügt ✓';
+    setTimeout(()=>{ b.classList.remove('done'); b.textContent='In den Warenkorb'; },1100);
+    
+    const cardImg = card.querySelector('.art img');
+    flyToCart(cardImg, cardImg.src);
+
+    renderCart(true);
+    const feeTxt = itemFee(id) > 0 ? ` (+${q}💎 Gebühr)` : '';
+    toast(`💎 ${q}× ${BY_ID[id].name}${feeTxt} im Warenkorb`);
+  }
+});
+
+$('#grid').addEventListener('change',e=>{
+  const card = e.target.closest('.card'); if(!card) return;
+  const id = card.dataset.id, i = BY_ID[id];
+  const min = i.minQty || 1;
+  if(e.target.matches('input[type=number]')){
+    const q = sanitize(e.target.value, min); e.target.value = q; state.qty[id] = q;
+    card.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.setq) === q));
+  }
+  if(e.target.matches('input[data-e]')){
+    const s = new Set(ensOf(id)), en = e.target.dataset.e;
+    if(e.target.checked){ s.add(en); (EXCL[en]||[]).forEach(x=>s.delete(x)); } else s.delete(en);
+    state.sel[id] = i.ench.filter(x=>s.has(x));
+    card.querySelectorAll('input[data-e]').forEach(c=>{ c.checked = s.has(c.dataset.e); });
+    card.querySelector('.price').innerHTML = priceHtml(i);
+  }
+});
+
+// ====== Warenkorb Logik ======
+const lineName = l => BY_ID[l.id].name + (l.ens.length ? ' ('+l.ens.join(', ')+')' : '');
+const cartItemCount = () => Object.values(state.cart).reduce((s,l)=>s+l.q,0);
+const cartToolCount = () => Object.values(state.cart).reduce((s,l)=>s + (itemFee(l.id) ? l.q : 0), 0);
+const cartSubTotal = () => Object.values(state.cart).reduce((s,l)=>s+baseUnit(l.id,l.ens)*l.q,0);
+const cartFeeTotal = () => Object.values(state.cart).reduce((s,l)=>s + (itemFee(l.id) * l.q), 0);
+const cartTotal = () => cartSubTotal() + cartFeeTotal();
+
+function renderCart(bump){
+  const lines = Object.entries(state.cart);
+  const totalCount = cartItemCount();
+  const badge = $('#badge'); badge.textContent = nf(totalCount);
+  if(bump){ badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump'); }
+
+  $('#subTotal').textContent = Number.isInteger(cartSubTotal()) ? nf(cartSubTotal()) : cartSubTotal().toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+  $('#feeTotal').textContent = nf(cartFeeTotal());
+  const cTot = cartTotal();
+  $('#total').textContent = Number.isInteger(cTot) ? nf(cTot) : cTot.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+  $('#checkout').disabled = !lines.length;
+
+  $('#lines').innerHTML = lines.length ? lines.map(([key,l])=>{
+    const u = baseUnit(l.id,l.ens);
+    const lineFee = itemFee(l.id) * l.q;
+    const uStr = (u === 0.5) ? '0,5' : nf(u);
+    const sumVal = u*l.q + lineFee;
+    const sumStr = Number.isInteger(sumVal) ? nf(sumVal) : sumVal.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+    const feeSub = lineFee > 0 ? ` (+${lineFee}💎 Gebühr)` : '';
+    return `<div class="line"><img data-k="${l.id}" src="${ico(l.id, BY_ID[l.id].tex)}" alt="">
+      <div>
+        <b>${BY_ID[l.id].name}</b>
+        <small>${l.ens.length?l.ens.join(', '):'Standard / unverzaubert'}</small>
+        <small>${l.q} × ${uStr}💎${feeSub}</small>
+      </div>
+      <div class="sum">
+        <span>${sumStr} 💎</span>
+        <button class="rm" data-rm="${key}">Entfernen</button>
+      </div></div>`;
+  }).join('') : `<div class="empty"><img data-k="bundle" src="${ico('bundle','item/bundle')}" alt=""><p>Dein Warenkorb ist leer.<br>Wähl im Sortiment ein Item aus.</p></div>`;
+}
+
+$('#lines').addEventListener('click',e=>{
+  const key = e.target.dataset.rm; if(key){ delete state.cart[key]; renderCart(); }
+});
+$('#clear').onclick = ()=>{ state.cart = {}; renderCart(); };
+
+const drawer = (on)=>{
+  $('#drawer').classList.toggle('on',on);
+  $('#overlay').classList.toggle('on',on);
+  $('#drawer').setAttribute('aria-hidden',!on);
+};
+$('#openCart').onclick = ()=>drawer(true);
+$('#closeCart').onclick = $('#overlay').onclick = ()=>drawer(false);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') drawer(false); });
+
+let tt;
+function toast(t){
+  const el=$('#toast'); el.textContent=t; el.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('on'),2200);
+}
+
+// ====== Checkout Dialog ======
+const dlg = $('#dlg');
+$('#checkout').onclick = ()=>{
+  $('#sumList').innerHTML = Object.values(state.cart).map(l=>{
+    const u = baseUnit(l.id,l.ens);
+    const sub = u * l.q;
+    const subStr = Number.isInteger(sub) ? nf(sub) : sub.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+    return `<div><span>${l.q}× ${lineName(l)}</span><span>${subStr} 💎</span></div>`;
+  }).join('');
+
+  $('#dlgFee').textContent = `+${nf(cartFeeTotal())} 💎 (${cartToolCount()} Tools)`;
+  const tot = cartTotal();
+  $('#sumTotal').textContent = Number.isInteger(tot) ? nf(tot) : tot.toLocaleString('de-DE', {minimumFractionDigits:1, maximumFractionDigits:1});
+  
+  $('#dlgUserName').textContent = currentUser || 'Unbekannt';
+  setHeadImg($('#dlgUserHead'), currentUser || 'Steve', 32);
+
+  $('#err').hidden = true; $('#formView').hidden = false; $('#okView').hidden = true;
+  dlg.showModal();
+};
+$('#cancel').onclick = ()=>dlg.close();
+$('#done').onclick = ()=>{ dlg.close(); drawer(false); };
+
+$('#orderForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const err = $('#err'), btn = $('#send');
+  err.hidden = true;
+
+  const player = currentUser;
+  if(!player){
+    err.textContent = 'Du bist nicht angemeldet!';
+    err.hidden = false; return;
+  }
+
+  const lines = Object.values(state.cart);
+  if(!lines.length){ err.textContent = 'Der Warenkorb ist leer.'; err.hidden = false; return; }
+
+  const comment = $('#comment').value.trim();
+  const text = lines.map(l=>{
+    const u = baseUnit(l.id,l.ens);
+    return `**${l.q}×** ${BY_ID[l.id].name}${l.ens.length?'\n> '+l.ens.join(', '):''}\n> Einzelpreis: ${nf(u)} 💎 | Teilsumme: ${nf(u*l.q)} 💎`;
+  }).join('\n\n');
+
+  const feeNote = cartFeeTotal() > 0 ? `\n\n📌 **Bearbeitungsgebühr:** +${nf(cartFeeTotal())} 💎 (${cartToolCount()} Tools)` : '\n\n📌 **Bearbeitungsgebühr:** Keine (keine Tools in Bestellung)';
+
+  const embed = {
+    title:'🛒 Neue Shop-Bestellung',
+    color:0x4de8d8,
+    description: (text + feeNote).slice(0,4000),
+    fields:[
+      {name:'👤 Spieler', value:`\`${player}\``, inline:true},
+      {name:'💎 Endbetrag inkl. Gebühr', value:`**${Number.isInteger(cartTotal())?nf(cartTotal()):cartTotal().toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} Diamanten**`, inline:true},
+      {name:'⭐ Punkte', value: AUTOPTS ? `+${nf(Math.floor(cartTotal()*EARN))} (automatisch gutgeschrieben)` : `+${nf(Math.floor(cartTotal()*EARN))} nach Bestätigung`, inline:true},
+      ...(saleActive()?[{name:'🔥 Aktion', value:`−${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}`, inline:true}]:[]),
+      {name:'💎 Zahlung', value:'Items erst nach Übergabe der Diamanten', inline:false},
+      ...(comment?[{name:'💬 Kommentar', value:comment.slice(0,1000)}]:[])
+    ],
+    footer:{text:'Alexshop • 1💎 Bearbeitungsgebühr nur auf Tools'},
+    timestamp:new Date().toISOString()
+  };
+
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  try{
+    const res = await fetch(WEBHOOK_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})
+    });
+
+    if(!res.ok) throw new Error('Discord antwortete mit Status '+res.status);
+
+    const earned = Math.floor(cartTotal()*EARN), ordTotal = pf(cartTotal())+' 💎';
+    const ordLines = lines.map(l=>`${l.q}× ${BY_ID[l.id].name}${l.ens.length?' ('+l.ens.join(', ')+')':''}`);
+    state.cart = {}; renderCart();
+    if(!$('#okView .ord-hint')) $('#okView').insertAdjacentHTML('beforeend','<p class="ord-hint" style="font-size:13px;color:#5f7a68">📦 Den Status deiner Anfrage siehst du oben unter „Bestellungen“.</p>');
+    $('#comment').value='';
+    (async()=>{ await registerOrder('Bestellung', ordLines, ordTotal, 'zahlung');
+      if(AUTOPTS && earned > 0){ const ok = await awardPoints(player, earned); toast(ok ? `+${nf(earned)} Punkte gutgeschrieben!` : '⚠️ Punkte konnten nicht automatisch gebucht werden – der Admin schreibt sie dir gut.'); } })();
+    $('#formView').hidden = true; $('#okView').hidden = false;
+  }catch(ex){
+    err.textContent = 'Fehler beim Senden: '+ex.message;
+    err.hidden = false;
+  }finally{
+    btn.disabled = false; btn.textContent = 'Bestellung senden';
+  }
+});
+
+// ====== Pfandhaus (Ankauf) ======
+const pf = n => Number.isInteger(n) ? nf(n) : n.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+const sellTotal = () => Object.entries(state.sell).reduce((s,[id,q])=>s+BY_ID[id].price*q,0);
+const sellCount = () => Object.values(state.sell).reduce((s,q)=>s+q,0);
+
+function switchPage(page){
+  state.page = page;
+  const sh = page === 'shop', pw = page === 'pawn', pt = page === 'pts';
+  $('#tabShop').classList.toggle('active', sh);
+  $('#tabPawn').classList.toggle('active', pw);
+  $('#tabPts').classList.toggle('active', pt);
+  $('#heroShop').style.display = sh ? '' : 'none';
+  $('#heroPawn').style.display = pw ? '' : 'none';
+  $('#heroPts').style.display = pt ? '' : 'none';
+  $('#shopFilters').style.display = sh ? '' : 'none';
+  $('#grid').style.display = sh ? '' : 'none';
+  $('#pawnGrid').style.display = pw ? '' : 'none';
+  $('#ptsGrid').style.display = pt ? '' : 'none';
+  renderPawn(); renderPts(); updatePawnBar();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ===== Bestellungen & Rückmeldungen =====
+let ORDERS = [];
+const ORD_STATUS = {offen:['🕓','Eingegangen'], zahlung:['💎','Wartet auf deine Diamanten'], bezahlt:['💰','Diamanten erhalten'], bearbeitung:['🔧','In Bearbeitung'], bereit:['📦','Bereit zur Übergabe'], fertig:['✅','Erledigt'], abgelehnt:['❌','Abgelehnt']};
+const ORD_SEEN_KEY = 'alexshop_ord_seen';
+const fmtDate = ts => new Date(ts).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+async function fetchRecord(){
+  if(!CLOUD_BIN_ID || !CLOUD_API_KEY) throw new Error('keine Cloud');
+  const g = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {headers:{'X-Master-Key':CLOUD_API_KEY}});
+  if(!g.ok) throw new Error('GET ' + g.status);
+  return ((await g.json()) || {}).record || {};
+}
+let ordDirty = false;
+async function cloudRW(mutator){
+  if(!CLOUD_BIN_ID || !CLOUD_API_KEY) throw new Error('keine Cloud');
+  const g = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {headers:{'X-Master-Key':CLOUD_API_KEY}});
+  if(!g.ok) throw new Error('GET ' + g.status);
+  const rec = ((await g.json()) || {}).record || {};
+  mutator(rec);
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CLOUD_API_KEY}, body:JSON.stringify(rec)});
+  if(!r.ok) throw new Error('PUT ' + r.status);
+  try{ localStorage.setItem('alexshop_custom_prices', JSON.stringify(rec)); }catch(e){}
+  return rec;
+}
+function pruneOrders(a){
+  const old = Date.now() - 30*864e5;
+  a = a.filter(o=>isObj(o) && o.id && !((o.status === 'fertig' || o.status === 'abgelehnt') && o.ts < old));
+  while(a.length > 120){ const i = a.findIndex(o=>o.status === 'fertig' || o.status === 'abgelehnt'); a.splice(i >= 0 ? i : 0, 1); }
+  return a;
+}
+async function registerOrder(type, lines, total, status){
+  if(!currentUser || BLOCKED.includes(currentUser)) return false;
+  const o = {id:'o'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36), player:currentUser, type, ts:Date.now(),
+    lines:lines.slice(0,25).map(x=>String(x).slice(0,90)), total:String(total).slice(0,30), status:status || 'offen', note:''};
+  try{
+    const rec = await cloudRW(r=>{ const a = Array.isArray(r.__orders) ? r.__orders : []; a.push(o); r.__orders = pruneOrders(a); });
+    ORDERS = rec.__orders; updateOrdBadge(); return true;
+  }catch(e){ console.warn('Bestellung konnte nicht für Rückmeldungen gespeichert werden', e); return false; }
+}
+const ordSig = o => o.status + '|' + (o.note || '');
+const myOrders = () => ORDERS.filter(o=>o.player === currentUser).sort((a,b)=>b.ts-a.ts);
+const ordSeen = () => { try{ return JSON.parse(localStorage.getItem(ORD_SEEN_KEY)||'{}'); }catch(e){ return {}; } };
+const unseenOrders = () => { const sn = ordSeen(); return myOrders().filter(o=>((o.status !== 'offen' && o.status !== 'zahlung') || o.note) && sn[o.id] !== ordSig(o)); };
+let announcedSig = '', lastOrdUser = null;
+function updateOrdBadge(announce){
+  const b = $('#ordBadge'); if(!b) return;
+  const u = currentUser ? unseenOrders() : [];
+  b.textContent = u.length; b.hidden = !u.length;
+  if(announce && u.length){
+    const sig = u.map(o=>o.id + ordSig(o)).join(';');
+    if(sig !== announcedSig){ announcedSig = sig; toast(`📦 Neuigkeiten zu deiner Bestellung: ${(ORD_STATUS[u[0].status]||ORD_STATUS.offen)[1]}`); }
+  }
+}
+function renderMyOrders(){
+  const list = myOrders().slice(0,15);
+  $('#ordList').innerHTML = list.length ? list.map(o=>{
+    const st = ORD_STATUS[o.status] || ORD_STATUS.offen;
+    return `<div style="border:1px solid #cfe0d1;border-radius:10px;padding:10px 12px;background:#f7fbf6;display:grid;gap:4px">
+      <div style="display:flex;justify-content:space-between;gap:8px"><b>${escH(o.type)} · ${escH(o.total)}</b><small>${fmtDate(o.ts)}</small></div>
+      <small style="color:#3b5a46">${(o.lines||[]).map(escH).join('<br>')}</small>
+      <div style="font-weight:700">${st[0]} ${st[1]}</div>
+      ${o.status === 'zahlung' ? '<div style="background:#fff6dd;border:1px solid #e8cf9e;border-radius:8px;padding:6px 8px;font-size:13px;color:#6b470d">💎 Übergib zuerst die Diamanten – erst danach bekommst du deine Items.</div>' : ''}
+      ${o.note ? `<div style="background:#fff;border:1px solid #cfe0d1;border-radius:8px;padding:6px 8px;font-size:13px">💬 ${escH(o.note)}</div>` : ''}
+    </div>`;
+  }).join('') : '<small style="color:#5f7a68">Noch keine Bestellungen.</small>';
+}
+async function fetchOrders(){
+  if(!currentUser || !CLOUD_BIN_ID || !CLOUD_API_KEY) return;
+  try{
+    const g = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {headers:{'X-Master-Key':CLOUD_API_KEY}});
+    if(!g.ok) return;
+    const rec = ((await g.json()) || {}).record || {};
+    ORDERS = Array.isArray(rec.__orders) ? rec.__orders.filter(isObj) : [];
+    applyAccess(rec); refreshAdminUi();
+    if(BLOCKED.includes(currentUser)){ kickBlocked(); return; }
+    if(ordDlg.open) renderMyOrders();
+    updateOrdBadge(true);
+  }catch(e){}
+}
+function renderAdminOrders(){
+  const list = ORDERS.slice().sort((a,b)=>b.ts-a.ts);
+  const open = ORDERS.filter(o=>o.status === 'offen' || o.status === 'zahlung').length;
+  $('#admTabOrd').textContent = '📦 Bestellungen' + (open ? ` (${open} neu)` : '');
+  $('#ordAdminList').innerHTML = list.length ? list.map(o=>`<div class="ap-row" style="display:grid;gap:6px" data-oid="${escH(o.id)}">
+    <div style="display:flex;justify-content:space-between;gap:8px"><b>${escH(o.player)} · ${escH(o.type)} · ${escH(o.total)}</b><small>${fmtDate(o.ts)}</small></div>
+    <small>${(o.lines||[]).map(escH).join('<br>')}</small>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <select class="f ord-st" style="width:auto">${Object.entries(ORD_STATUS).map(([k,v])=>`<option value="${k}"${o.status===k?' selected':''}>${v[0]} ${v[1]}</option>`).join('')}</select>
+      <input class="f ord-note" maxlength="200" placeholder="Nachricht an den Spieler (optional)" value="${escH(o.note||'')}" style="flex:1;min-width:160px">
+      <button type="button" class="ghost" data-ordsave="${escH(o.id)}">Senden</button>
+      <button type="button" class="ghost" data-orddel="${escH(o.id)}" title="Löschen">🗑</button>
+    </div></div>`).join('') : '<small style="color:#5f7a68">Noch keine Bestellungen.</small>';
+}
+async function adminOrdAction(id, del){
+  const row = document.querySelector(`#ordAdminList [data-oid="${id}"]`);
+  const st = row.querySelector('.ord-st').value, note = row.querySelector('.ord-note').value.trim().slice(0,200);
+  try{
+    const rec = await cloudRW(r=>{
+      const a = Array.isArray(r.__orders) ? r.__orders : [];
+      const i = a.findIndex(o=>o.id === id);
+      if(i >= 0){ if(del) a.splice(i,1); else { a[i].status = st; a[i].note = note; } }
+      r.__orders = a;
+    });
+    ORDERS = rec.__orders; ordDirty = false; renderAdminOrders(); toast(del ? '🗑 Bestellung gelöscht' : '✅ Rückmeldung an den Spieler gespeichert');
+  }catch(e){ toast('⚠️ Konnte nicht gespeichert werden (Cloud).'); }
+}
+
+// Automatische Gutschrift: aktuellen Cloud-Stand holen, nur die Punkte dieses Spielers erhöhen, zurückschreiben
+async function awardPoints(player, n){
+  if(!CLOUD_BIN_ID || !CLOUD_API_KEY || !(n > 0)) return false;
+  try{
+    const g = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {headers:{'X-Master-Key':CLOUD_API_KEY}});
+    if(!g.ok) throw new Error('GET ' + g.status);
+    const rec = ((await g.json()) || {}).record || {};
+    const pts = isObj(rec.__points) ? rec.__points : {};
+    pts[player] = (Number(pts[player]) || 0) + n;
+    rec.__points = pts;
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+      method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CLOUD_API_KEY}, body:JSON.stringify(rec)
+    });
+    if(!r.ok) throw new Error('PUT ' + r.status);
+    // offene Einlösungen mitziehen, damit sie durch die Gutschrift nicht verfallen
+    try{ const all = JSON.parse(localStorage.getItem(PEND_KEY)||'{}');
+      (all[player]||[]).forEach(x=>{ x.bal += n; });
+      localStorage.setItem(PEND_KEY, JSON.stringify(all)); }catch(e){}
+    POINTS = pts;
+    try{ localStorage.setItem('alexshop_custom_prices', JSON.stringify(rec)); }catch(e){}
+    updatePtsChip(); renderPts();
+    return true;
+  }catch(e){ console.warn('Automatische Punkte-Gutschrift fehlgeschlagen', e); return false; }
+}
+
+// ===== Punkteshop =====
+const PEND_KEY = 'alexshop_pts_pending';
+let ptsBase = {};
+const myPoints = () => (currentUser && POINTS[currentUser]) || 0;
+// Offene Einlösungen (lokal gemerkt): verfallen, sobald der Admin den Kontostand ändert oder nach 24 Std.
+function pendList(){
+  try{ const all = JSON.parse(localStorage.getItem(PEND_KEY)||'{}');
+    return (all[currentUser]||[]).filter(r=>r.bal === myPoints() && Date.now()-r.ts < 864e5); }catch(e){ return []; }
+}
+function pendAdd(cost){
+  try{ const all = JSON.parse(localStorage.getItem(PEND_KEY)||'{}');
+    (all[currentUser] = all[currentUser] || []).push({cost, bal:myPoints(), ts:Date.now()});
+    localStorage.setItem(PEND_KEY, JSON.stringify(all)); }catch(e){}
+}
+const ptsAvailable = () => Math.max(0, myPoints() - pendList().reduce((t,r)=>t+r.cost,0));
+function updatePtsChip(){ $('#myPts').innerHTML = NS() + ' ' + nf(myPoints()); }
+function renderPts(){
+  const avail = ptsAvailable(), pend = myPoints() - avail;
+  $('#ptsBal').textContent = nf(avail);
+  $('#ptsPend').innerHTML = pend > 0 ? `(${nf(pend)} ${NS()} warten auf Abbuchung)` : '';
+  $('#ptsGrid').innerHTML = REWARD_IDS.filter(rewardActive).filter(id=>matchQ(BY_ID[id])).map(id=>{
+    const i = BY_ID[id], c = rewardCost(id), can = avail >= c;
+    return `<article class="card sell-card" data-id="${id}">
+      <div class="art"><span class="rar sell">${nf(c)} ${NS()}</span><img data-k="${id}" src="${ico(id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body"><h3>${i.name}</h3>
+        <div class="price">${NS()} ${nf(c)} Punkte<small>${can ? 'Du kannst das einlösen' : 'Dir fehlen noch '+nf(c-avail)+' Punkte'}</small></div>
+        <button type="button" class="add pts-btn" data-redeem="${id}"${can?'':' disabled'}>${can?'Einlösen':'Zu wenig Punkte'}</button>
+      </div></article>`;
+  }).join('') || '<p style="grid-column:1/-1">Aktuell gibt es keine Belohnungen.</p>';
+}
+$('#ptsGrid').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-redeem]'); if(!b || b.disabled) return;
+  const id = b.dataset.redeem, cost = rewardCost(id);
+  if(!currentUser || ptsAvailable() < cost) return;
+  if(!confirm(`${BY_ID[id].name} für ${nf(cost)} Punkte einlösen?`)) return;
+  b.disabled = true; b.textContent = 'Wird gesendet …';
+  const hook = isHook(POINTS_WEBHOOK_URL) ? POINTS_WEBHOOK_URL.trim() : (isHook(PAWN_WEBHOOK_URL) ? PAWN_WEBHOOK_URL.trim() : WEBHOOK_URL);
+  const embed = {
+    title:'⭐ Neue Punkte-Einlösung', color:0x7c5cc4,
+    description:`**${BY_ID[id].name}**\n> Kosten: ${nf(cost)} ⭐\n\nBitte im Admin-Menü unter „Punkte & Aktionen“ abbuchen.`,
+    fields:[{name:'👤 Spieler', value:`\`${currentUser}\``, inline:true},{name:'⭐ Kontostand', value:`${nf(myPoints())}`, inline:true}],
+    footer:{text:'Alexshop • Punkteshop'}, timestamp:new Date().toISOString()
+  };
+  try{
+    const res = await fetch(hook,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop Punkteshop',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})});
+    if(!res.ok) throw new Error('Status '+res.status);
+    registerOrder('Einlösung', [BY_ID[id].name], nf(cost)+' Punkte'); pendAdd(cost); toast('⭐ Einlösung gesendet! Du bekommst die Belohnung bei der Übergabe.');
+  }catch(ex){ toast('⚠️ Senden fehlgeschlagen: '+ex.message); }
+  renderPts();
+});
+
+// ===== Rabatt-Banner =====
+let wasSale = false;
+function tickSale(){
+  const b = $('#saleBanner'), on = saleActive();
+  if(on){
+    const rem = SALE.endsAt ? Math.max(0, SALE.endsAt - Date.now()) : 0, sec = Math.floor(rem/1000);
+    const t = SALE.endsAt ? ` · endet in ${Math.floor(sec/3600)}:${String(Math.floor(sec%3600/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}` : '';
+    b.textContent = `🔥 AKTION: −${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}${t}`;
+    b.hidden = false;
+  } else b.hidden = true;
+  if(on !== wasSale){ wasSale = on; renderGrid(); renderCart(); }
+}
+
+function renderPawn(){
+  $('#pawnGrid').innerHTML = ITEMS.filter(i=>i.pawn&&!i.hidden&&matchQ(i)).map(i=>{
+    const q = state.pqty[i.id] || 1;
+    return `<article class="card sell-card" data-id="${i.id}">
+      <div class="art"><span class="rar sell">Ankauf</span>
+        <img data-k="${i.id}" src="${ico(i.id, i.tex)}" alt="${i.name}" loading="lazy"></div>
+      <div class="body">
+        <h3>${i.name}</h3>
+        <div class="price"><img data-k="diamond" src="${ico('diamond','item/diamond')}" alt="">${pf(i.price)} Diamanten<small>Auszahlung bei Übergabe auf dem Server</small></div>
+        <div class="buy">
+          <div class="qty">
+            <button type="button" data-act="minus" aria-label="Weniger">−</button>
+            <input type="number" min="1" step="1" inputmode="numeric" value="${q}" aria-label="Menge ${i.name}">
+            <button type="button" data-act="plus" aria-label="Mehr">+</button>
+          </div>
+          <button type="button" class="add sell-btn" data-act="sell">Verkaufen</button>
+        </div>
+      </div></article>`;
+  }).join('');
+}
+
+function updatePawnBar(){
+  const n = sellCount();
+  $('#pawnBar').hidden = !(state.page === 'pawn' && n > 0);
+  $('#pawnSummary').textContent = `${nf(n)} Packungen · Auszahlung ${pf(sellTotal())} 💎`;
+}
+
+$('#pawnGrid').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, inp = card.querySelector('input[type=number]');
+  let q = sanitize(inp.value, 1);
+  if(b.dataset.act === 'plus') q++;
+  if(b.dataset.act === 'minus') q = Math.max(1, q-1);
+  inp.value = q; state.pqty[id] = q;
+  if(b.dataset.act === 'sell'){
+    state.sell[id] = (state.sell[id] || 0) + q;
+    state.pqty[id] = 1; inp.value = 1;
+    b.classList.add('done'); b.textContent = 'Hinzugefügt ✓';
+    setTimeout(()=>{ b.classList.remove('done'); b.textContent = 'Verkaufen'; }, 1100);
+    updatePawnBar();
+    toast(`🏦 ${q}× ${BY_ID[id].name} zum Ankauf vorgemerkt`);
+  }
+});
+$('#pawnGrid').addEventListener('change', e=>{
+  if(e.target.matches('input[type=number]')){
+    const q = sanitize(e.target.value, 1); e.target.value = q;
+    state.pqty[e.target.closest('.card').dataset.id] = q;
+  }
+});
+
+const pawnDlg = $('#pawnDlg');
+function renderPawnList(){
+  $('#pawnList').innerHTML = Object.entries(state.sell).map(([id,q])=>
+    `<div><span>${q}× ${BY_ID[id].name}</span><span>${pf(BY_ID[id].price*q)} 💎 <button type="button" class="rm" data-prm="${id}">Entfernen</button></span></div>`).join('');
+  $('#pawnTotal').textContent = pf(sellTotal());
+  if(!sellCount()){ pawnDlg.close(); }
+  updatePawnBar();
+}
+$('#pawnList').addEventListener('click', e=>{
+  const id = e.target.dataset.prm; if(id){ delete state.sell[id]; renderPawnList(); }
+});
+$('#pawnOpen').onclick = ()=>{
+  $('#pawnErr').hidden = true; $('#pawnFormView').hidden = false; $('#pawnOk').hidden = true;
+  renderPawnList();
+  if(sellCount()) pawnDlg.showModal();
+};
+$('#pawnCancel').onclick = ()=>pawnDlg.close();
+$('#pawnDone').onclick = ()=>pawnDlg.close();
+
+$('#pawnForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const err = $('#pawnErr'), btn = $('#pawnSend');
+  err.hidden = true;
+  if(!currentUser){ err.textContent = 'Du bist nicht angemeldet!'; err.hidden = false; return; }
+  const entries = Object.entries(state.sell);
+  if(!entries.length){ err.textContent = 'Die Ankauf-Liste ist leer.'; err.hidden = false; return; }
+  const comment = $('#pawnComment').value.trim();
+  const text = entries.map(([id,q])=>`**${q}×** ${BY_ID[id].name}\n> Auszahlung: ${pf(BY_ID[id].price*q)} 💎`).join('\n\n');
+  const embed = {
+    title:'🏦 Neue Pfandhaus-Anfrage (Ankauf)',
+    color:0xe5a842,
+    description: text.slice(0,4000),
+    fields:[
+      {name:'👤 Spieler', value:`\`${currentUser}\``, inline:true},
+      {name:'💎 Auszahlung gesamt', value:`**${pf(sellTotal())} Diamanten**`, inline:true},
+      ...(comment?[{name:'💬 Kommentar', value:comment.slice(0,1000)}]:[])
+    ],
+    footer:{text:'Alexshop • Pfandhaus'},
+    timestamp:new Date().toISOString()
+  };
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  try{
+    const hook = isHook(PAWN_WEBHOOK_URL) ? PAWN_WEBHOOK_URL.trim() : WEBHOOK_URL;
+    const res = await fetch(hook,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'Alexshop Pfandhaus',avatar_url:WEBHOOK_AVATAR,allowed_mentions:{parse:[]},embeds:[embed]})});
+    if(!res.ok) throw new Error('Discord antwortete mit Status '+res.status);
+    registerOrder('Ankauf', entries.map(([id,q])=>`${q}× ${BY_ID[id].name}`), pf(sellTotal())+' 💎');
+    state.sell = {}; updatePawnBar();
+    $('#pawnComment').value = '';
+    if(!$('#pawnOk .ord-hint')) $('#pawnOk').insertAdjacentHTML('beforeend','<p class="ord-hint" style="font-size:13px;color:#5f7a68">📦 Den Status deiner Anfrage siehst du oben unter „Bestellungen“.</p>');
+    $('#pawnFormView').hidden = true; $('#pawnOk').hidden = false;
+  }catch(ex){
+    err.textContent = 'Fehler beim Senden: '+ex.message; err.hidden = false;
+  }finally{
+    btn.disabled = false; btn.textContent = 'Ankauf senden';
+  }
+});
+
+// ====== Admin PIN & Preis-Editor ======
+const adminDlg = $('#adminDlg');
+const ordDlg = $('#ordDlg');
+$('#myOrdersBtn').onclick = () => {
+  renderMyOrders();
+  const sn = ordSeen(); myOrders().forEach(o=>{ sn[o.id] = ordSig(o); });
+  try{ localStorage.setItem(ORD_SEEN_KEY, JSON.stringify(sn)); }catch(e){}
+  updateOrdBadge(); ordDlg.showModal(); fetchOrders();
+};
+$('#ordClose').onclick = () => ordDlg.close();
+$('#ordAdminBtn').onclick = () => { ordDlg.close(); adminOpenTab = 'ord'; openAdminDialog(); };
+setInterval(()=>{ if(currentUser !== lastOrdUser){ lastOrdUser = currentUser; fetchOrders(); } }, 1000);
+setInterval(()=>{ if(!adminDlg.open && !ordDlg.open) fetchOrders(); else if(ordDlg.open) fetchOrders(); }, 45000);
+
+let adminUnlocked = false;
+let adminOpenTab = null;   // PIN wird pro Seitenaufruf nur einmal abgefragt
+function openAdminDialog(){
+  if(!isAdminUser()) return;
+  $('#pinErr').hidden = true;
+  $('#adminPin').value = '';
+  adminDlg.showModal();
+  if(adminUnlocked){ showAdminEditor(); return; }
+  $('#adminPinView').style.display = 'grid';
+  $('#adminEditorView').style.display = 'none';
+  setTimeout(() => $('#adminPin').focus(), 50);
+}
+
+const adminRow = item => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:#f3f8f2;border:1px solid #cfe0d1;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img data-k="${item.id}" src="${ico(item.id, item.tex)}" style="width:24px;height:24px">
+        <div style="min-width:0"><span style="font-size:13px;font-weight:600">${item.name}</span>${item.pair?`<small class="admin-margin" data-pawn="${item.id}" data-pair="${item.pair}" style="display:block;font-size:11px"></small>`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        ${item.custom?`<button type="button" class="rm" data-del="${item.id}" title="Item löschen">Löschen</button>`:''}
+        <label title="Im Shop sichtbar" style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#5f7a68;cursor:pointer"><input type="checkbox" class="admin-vis" data-item="${item.id}"${item.hidden?'':' checked'}>sichtbar</label>
+        <input type="number" step="0.5" min="0.1" class="f admin-p-input" data-item="${item.id}" value="${item.price}" style="width:70px;padding:4px 6px;text-align:right">
+        <span style="font-size:12px">💎</span>
+      </div>
+    </div>`;
+function renderAdminLists(){
+  $('#adminItemsList').innerHTML = ITEMS.filter(i=>!i.pawn).map(adminRow).join('');
+  $('#adminPawnList').innerHTML = ITEMS.filter(i=>i.pawn).map(adminRow).join('');
+  updateMargins();
+}
+function adminSnap(){
+  const p = {}, v = {};
+  document.querySelectorAll('.admin-p-input').forEach(i=>{ p[i.dataset.item] = i.value; });
+  document.querySelectorAll('.admin-vis').forEach(c=>{ v[c.dataset.item] = c.checked; });
+  return {p, v};
+}
+function adminRestore(sn){
+  document.querySelectorAll('.admin-p-input').forEach(i=>{ if(sn.p[i.dataset.item] !== undefined) i.value = sn.p[i.dataset.item]; });
+  document.querySelectorAll('.admin-vis').forEach(c=>{ if(sn.v[c.dataset.item] !== undefined) c.checked = sn.v[c.dataset.item]; });
+  updateMargins();
+}
+function showAdminEditor(){
+  $('#adminPinView').style.display = 'none';
+  $('#adminEditorView').style.display = 'flex';
+  renderAdminLists();
+  renderAdminPts();
+  setAdminTab(adminOpenTab || 'shop'); adminOpenTab = null;
+}
+
+// Zeigt live, ob der Shop teurer verkauft als er ankauft
+function updateMargins(){
+  document.querySelectorAll('.admin-margin').forEach(el=>{
+    const ia = document.querySelector(`.admin-p-input[data-item="${el.dataset.pawn}"]`);
+    const ib = document.querySelector(`.admin-p-input[data-item="${el.dataset.pair}"]`);
+    const a = parseFloat(ia && ia.value), b = parseFloat(ib && ib.value);
+    if(isNaN(a) || isNaN(b)){ el.textContent = ''; return; }
+    const m = b - a;
+    el.textContent = `Shop verkauft für ${pf(b)} 💎 → ` + (m>0 ? `Gewinn ${pf(m)} 💎 pro Packung` : m===0 ? 'KEIN Gewinn' : `VERLUST ${pf(-m)} 💎 pro Packung`);
+    el.style.color = m>0 ? '#2d7a3e' : '#c0392b';
+  });
+}
+$('#adminEditorView').addEventListener('input', updateMargins);
+
+// Beide Listen bleiben im Dokument, damit beim Speichern alle Preise (Shop + Ankauf) erhalten bleiben
+function setAdminTab(tab){
+  $('#adminItemsList').style.display = tab === 'shop' ? 'grid' : 'none';
+  $('#adminPawnList').style.display = tab === 'pawn' ? 'grid' : 'none';
+  $('#adminNewView').style.display = tab === 'new' ? 'grid' : 'none';
+  $('#adminPtsView').style.display = tab === 'pts' ? 'grid' : 'none';
+  $('#adminOrdView').style.display = tab === 'ord' ? 'grid' : 'none';
+  $('#adminUsrView').style.display = tab === 'usr' ? 'grid' : 'none';
+  $('#admTabUsr').classList.toggle('active', tab === 'usr');
+  if(tab === 'usr'){ renderAdminUsers(); fetchRecord().then(r=>{ applyAccess(r); renderAdminUsers(); }).catch(()=>{}); }
+  $('#admTabOrd').classList.toggle('active', tab === 'ord');
+  if(tab === 'ord'){ ordDirty = false; renderAdminOrders(); fetchRecord().then(r=>{ ORDERS = Array.isArray(r.__orders) ? r.__orders.filter(isObj) : []; if(!ordDirty) renderAdminOrders(); }).catch(()=>{}); }
+  $('#admTabPts').classList.toggle('active', tab === 'pts');
+  $('#admTabShop').classList.toggle('active', tab === 'shop');
+  $('#admTabPawn').classList.toggle('active', tab === 'pawn');
+  $('#admTabNew').classList.toggle('active', tab === 'new');
+}
+$('#admTabShop').onclick = () => setAdminTab('shop');
+$('#admTabPawn').onclick = () => setAdminTab('pawn');
+$('#admTabNew').onclick = () => setAdminTab('new');
+$('#admTabPts').onclick = () => setAdminTab('pts');
+$('#admTabOrd').onclick = () => setAdminTab('ord');
+$('#admTabUsr').onclick = () => setAdminTab('usr');
+function renderAdminUsers(){
+  const owner = currentUser === OWNER;
+  $('#usrList').innerHTML = WHITELIST.map(n=>{
+    const isO = n === OWNER, adm = ADMINS.includes(n), blk = BLOCKED.includes(n), me = n === currentUser;
+    const badges = (isO?'<span class="usr-badge own">👑 Besitzer</span>':'') + (adm?'<span class="usr-badge adm">🛡 Admin</span>':'') + (blk?'<span class="usr-badge blk">🚫 gesperrt</span>':'') + (me?' <small>(du)</small>':'');
+    let btns = '';
+    if(!isO && !me){
+      const canBlock = owner || !adm;
+      btns += `<button type="button" class="ghost" data-usr="${escH(n)}" data-act="${blk?'unblock':'block'}"${(!blk && !canBlock)?' disabled':''}>${blk?'✅ Entsperren':'🚫 Sperren'}</button>`;
+      if(owner) btns += `<button type="button" class="ghost" data-usr="${escH(n)}" data-act="${adm?'unadmin':'admin'}"${blk?' disabled':''}>${adm?'Admin entziehen':'🛡 Zum Admin machen'}</button>`;
+    }
+    return `<div class="usr-row"><span><b>${escH(n)}</b>${badges}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${btns}</span></div>`;
+  }).join('');
+}
+async function adminUserAction(name, kind){
+  const owner = currentUser === OWNER;
+  if(!WHITELIST.includes(name) || name === OWNER || name === currentUser) return;
+  if((kind === 'admin' || kind === 'unadmin') && !owner) return;
+  try{
+    const rec = await cloudRW(r=>{
+      let b = nameList(r.__blocked), a = nameList(r.__admins);
+      if(kind === 'block'){ if(a.includes(name) && !owner) throw new Error('perm'); if(!b.includes(name)) b.push(name); a = a.filter(x=>x !== name); }
+      else if(kind === 'unblock'){ b = b.filter(x=>x !== name); }
+      else if(kind === 'admin'){ if(!b.includes(name) && !a.includes(name)) a.push(name); }
+      else if(kind === 'unadmin'){ a = a.filter(x=>x !== name); }
+      r.__blocked = b; r.__admins = a;
+    });
+    applyAccess(rec); renderAdminUsers();
+    toast({block:'🚫 '+name+' gesperrt', unblock:'✅ '+name+' entsperrt', admin:'🛡 '+name+' ist jetzt Admin', unadmin:'Admin-Rechte von '+name+' entzogen'}[kind]);
+  }catch(e){ toast('⚠️ Konnte nicht gespeichert werden (Cloud).'); }
+}
+$('#usrList').addEventListener('click', e=>{ const b = e.target.closest('[data-act]'); if(b) adminUserAction(b.dataset.usr, b.dataset.act); });
+$('#ordRefresh').onclick = () => setAdminTab('ord');
+$('#ordAdminList').addEventListener('input', ()=>{ ordDirty = true; });
+$('#ordAdminList').addEventListener('change', ()=>{ ordDirty = true; });
+$('#ordAdminList').addEventListener('click', e=>{
+  const sv = e.target.dataset && e.target.dataset.ordsave, dl = e.target.dataset && e.target.dataset.orddel;
+  if(sv) adminOrdAction(sv, false);
+  else if(dl && confirm('Diese Bestellung wirklich löschen?')) adminOrdAction(dl, true);
+});
+
+function rwValue(id){ const el = document.querySelector(`.admin-p-input[data-item="${id}"]`); const v = el ? parseFloat(el.value) : NaN; return isNaN(v) ? BY_ID[id].price : v; }
+function updateRwNotes(){
+  document.querySelectorAll('.rw-note').forEach(el=>{
+    const id = el.dataset.rw, v = rwValue(id), cost = parseFloat(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+    const ok = cost >= Math.ceil(v * MIN_PPV);
+    el.textContent = `Wert ${pf(v)} 💎 · Spieler gibt ${pf(cost/EARN)} 💎 aus → ${ok ? 'Gewinn für dich' : 'ZU GÜNSTIG'}`;
+    el.style.color = ok ? '#2d7a3e' : '#c0392b';
+  });
+}
+function updateSaleStatus(){
+  $('#saleStatus').textContent = saleActive()
+    ? `Läuft: −${SALE.pct} % auf ${SALE.target==='Alle'?'alles':SALE.target}${SALE.endsAt ? ' bis '+new Date(SALE.endsAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr' : ' (bis du sie beendest)'}`
+    : 'Gerade läuft keine Aktion.';
+}
+function renderAdminPts(){
+  ptsBase = Object.assign({}, POINTS);
+  $('#admAutoPts').checked = AUTOPTS;
+  $('#ptsRows').innerHTML = WHITELIST.map(n=>`<div class="ap-row"><span>${n}</span><span><input type="number" min="0" step="1" class="f admin-pts" data-pl="${n}" value="${POINTS[n]||0}" style="width:90px;padding:4px 6px;text-align:right"> ⭐</span></div>`).join('');
+  $('#qcPlayer').innerHTML = WHITELIST.map(n=>`<option>${n}</option>`).join('');
+  renderRwRows(false);
+  updateRwNotes(); updateSaleStatus();
+}
+function renderRwRows(keep){
+  const snap = {};
+  if(keep) document.querySelectorAll('.admin-rw-cost').forEach(i=>{ const a = document.querySelector(`.admin-rw-act[data-rw="${i.dataset.rw}"]`); snap[i.dataset.rw] = {cost:i.value, act:a ? a.checked : true}; });
+  $('#qrReward').innerHTML = REWARD_IDS.map(id=>`<option value="${id}">${escH(BY_ID[id].name)}</option>`).join('');
+  $('#rwRows').innerHTML = REWARD_IDS.map(id=>{
+    const c = REWARD_CFG[id], sv = snap[id];
+    const cost = sv ? sv.cost : rewardCost(id), act = sv ? sv.act : !(c && c.active === false);
+    return `<div class="ap-row"><span>${escH(BY_ID[id].name)}<small class="rw-note" data-rw="${id}" style="display:block;font-size:11px"></small></span>
+      <span><label style="font-size:11px;font-weight:600"><input type="checkbox" class="admin-rw-act" data-rw="${id}"${act?' checked':''}> aktiv</label>
+      <input type="number" min="1" step="1" class="f admin-rw-cost" data-rw="${id}" value="${escH(cost)}" style="width:80px;padding:4px 6px;text-align:right"> ⭐
+      <button type="button" class="ghost" data-rwdel="${id}" title="Belohnung entfernen" style="padding:2px 8px">🗑</button></span></div>`;
+  }).join('') || '<small style="color:#5f7a68">Keine Belohnungen. Füge unten welche hinzu.</small>';
+  fillRwPicker(); updateRwNotes();
+}
+function fillRwPicker(){
+  const q = ($('#rwSearch').value || '').trim().toLowerCase();
+  const c = ITEMS.filter(i=>!i.pawn && !i.hidden && !REWARD_IDS.includes(i.id) && (i.name + ' ' + i.id.replace(/_/g,' ')).toLowerCase().includes(q)).slice(0,80);
+  $('#rwAddSel').innerHTML = c.length ? c.map(i=>`<option value="${i.id}">${escH(i.name)} (${i.price} 💎)</option>`).join('') : '<option value="">Nichts gefunden</option>';
+}
+$('#rwSearch').oninput = fillRwPicker;
+$('#rwAddBtn').onclick = () => { const id = $('#rwAddSel').value; if(!id || !BY_ID[id] || REWARD_IDS.includes(id)) return; REWARD_IDS.push(id); renderRwRows(true); };
+$('#rwRows').addEventListener('click', e=>{ const id = e.target.dataset && e.target.dataset.rwdel; if(!id) return; REWARD_IDS = REWARD_IDS.filter(x=>x !== id); renderRwRows(true); });
+$('#adminEditorView').addEventListener('input', updateRwNotes);
+const ptsMsg = t => { const m = $('#ptsMsg'); m.textContent = t; m.hidden = false; };
+$('#qcBtn').onclick = () => {
+  const n = $('#qcPlayer').value, d = parseFloat($('#qcDiamonds').value);
+  if(!(d > 0)) return;
+  const add = Math.floor(d * EARN), inp = document.querySelector(`.admin-pts[data-pl="${n}"]`);
+  inp.value = (parseInt(inp.value)||0) + add; $('#qcDiamonds').value = '';
+  ptsMsg(`+${nf(add)} ⭐ für ${n} vorgemerkt. Unten auf „Preise speichern“ klicken.`);
+};
+$('#qrBtn').onclick = () => {
+  const n = $('#qcPlayer').value, id = $('#qrReward').value, inp = document.querySelector(`.admin-pts[data-pl="${n}"]`);
+  const cost = parseInt(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+  if((parseInt(inp.value)||0) < cost){ ptsMsg(`${n} hat nur ${nf(parseInt(inp.value)||0)} ⭐, das reicht nicht für ${nf(cost)} ⭐.`); return; }
+  inp.value = (parseInt(inp.value)||0) - cost;
+  ptsMsg(`−${nf(cost)} ⭐ von ${n} für „${BY_ID[id].name}“ vorgemerkt. Unten auf „Preise speichern“ klicken.`);
+};
+$('#saleStart').onclick = () => {
+  const pct = Math.min(90, Math.max(1, parseInt($('#salePct').value) || 0)), min = parseInt($('#saleDur').value) || 0;
+  SALE = {pct, target:$('#saleTarget').value, endsAt: min ? Date.now() + min*60000 : 0};
+  $('#savePricesBtn').click();
+};
+$('#saleStop').onclick = () => { SALE = null; $('#savePricesBtn').click(); };
+
+// ====== Minecraft-Itemliste (Survival) für „Neues Item“ ======
+const MC_ITEMS = `oak_log|Eichestamm|block/oak_log|Baustoffe
+oak_planks|Eichebretter|block/oak_planks|Baustoffe
+oak_slab|Eichestufe|block/oak_planks|Baustoffe
+oak_stairs|Eichetreppe|block/oak_planks|Baustoffe
+oak_fence|Eichezaun|block/oak_planks|Baustoffe
+oak_fence_gate|Eichezauntor|block/oak_planks|Baustoffe
+oak_door|Eichetür|item/oak_door|Baustoffe
+oak_trapdoor|Eichefalltür|block/oak_trapdoor|Baustoffe
+oak_button|Eicheknopf|block/oak_planks|Baustoffe
+oak_pressure_plate|Eichedruckplatte|block/oak_planks|Redstone
+oak_sign|Eicheschild|item/oak_sign|Baustoffe
+oak_boat|Eicheboot|item/oak_boat|Baustoffe
+oak_leaves|Eichelaub|block/oak_leaves|Baustoffe
+oak_sapling|Eichesetzling|block/oak_sapling|Baustoffe
+stripped_oak_log|Entrindeter Eichestamm|block/stripped_oak_log|Baustoffe
+spruce_log|Fichtenstamm|block/spruce_log|Baustoffe
+spruce_planks|Fichtenbretter|block/spruce_planks|Baustoffe
+spruce_slab|Fichtenstufe|block/spruce_planks|Baustoffe
+spruce_stairs|Fichtentreppe|block/spruce_planks|Baustoffe
+spruce_fence|Fichtenzaun|block/spruce_planks|Baustoffe
+spruce_fence_gate|Fichtenzauntor|block/spruce_planks|Baustoffe
+spruce_door|Fichtentür|item/spruce_door|Baustoffe
+spruce_trapdoor|Fichtenfalltür|block/spruce_trapdoor|Baustoffe
+spruce_button|Fichtenknopf|block/spruce_planks|Baustoffe
+spruce_pressure_plate|Fichtendruckplatte|block/spruce_planks|Redstone
+spruce_sign|Fichtenschild|item/spruce_sign|Baustoffe
+spruce_boat|Fichtenboot|item/spruce_boat|Baustoffe
+spruce_leaves|Fichtenlaub|block/spruce_leaves|Baustoffe
+spruce_sapling|Fichtensetzling|block/spruce_sapling|Baustoffe
+stripped_spruce_log|Entrindeter Fichtenstamm|block/stripped_spruce_log|Baustoffe
+birch_log|Birkenstamm|block/birch_log|Baustoffe
+birch_planks|Birkenbretter|block/birch_planks|Baustoffe
+birch_slab|Birkenstufe|block/birch_planks|Baustoffe
+birch_stairs|Birkentreppe|block/birch_planks|Baustoffe
+birch_fence|Birkenzaun|block/birch_planks|Baustoffe
+birch_fence_gate|Birkenzauntor|block/birch_planks|Baustoffe
+birch_door|Birkentür|item/birch_door|Baustoffe
+birch_trapdoor|Birkenfalltür|block/birch_trapdoor|Baustoffe
+birch_button|Birkenknopf|block/birch_planks|Baustoffe
+birch_pressure_plate|Birkendruckplatte|block/birch_planks|Redstone
+birch_sign|Birkenschild|item/birch_sign|Baustoffe
+birch_boat|Birkenboot|item/birch_boat|Baustoffe
+birch_leaves|Birkenlaub|block/birch_leaves|Baustoffe
+birch_sapling|Birkensetzling|block/birch_sapling|Baustoffe
+stripped_birch_log|Entrindeter Birkenstamm|block/stripped_birch_log|Baustoffe
+jungle_log|Tropenholzstamm|block/jungle_log|Baustoffe
+jungle_planks|Tropenholzbretter|block/jungle_planks|Baustoffe
+jungle_slab|Tropenholzstufe|block/jungle_planks|Baustoffe
+jungle_stairs|Tropenholztreppe|block/jungle_planks|Baustoffe
+jungle_fence|Tropenholzzaun|block/jungle_planks|Baustoffe
+jungle_fence_gate|Tropenholzzauntor|block/jungle_planks|Baustoffe
+jungle_door|Tropenholztür|item/jungle_door|Baustoffe
+jungle_trapdoor|Tropenholzfalltür|block/jungle_trapdoor|Baustoffe
+jungle_button|Tropenholzknopf|block/jungle_planks|Baustoffe
+jungle_pressure_plate|Tropenholzdruckplatte|block/jungle_planks|Redstone
+jungle_sign|Tropenholzschild|item/jungle_sign|Baustoffe
+jungle_boat|Tropenholzboot|item/jungle_boat|Baustoffe
+jungle_leaves|Tropenholzlaub|block/jungle_leaves|Baustoffe
+jungle_sapling|Tropenholzsetzling|block/jungle_sapling|Baustoffe
+stripped_jungle_log|Entrindeter Tropenholzstamm|block/stripped_jungle_log|Baustoffe
+acacia_log|Akazienstamm|block/acacia_log|Baustoffe
+acacia_planks|Akazienbretter|block/acacia_planks|Baustoffe
+acacia_slab|Akazienstufe|block/acacia_planks|Baustoffe
+acacia_stairs|Akazientreppe|block/acacia_planks|Baustoffe
+acacia_fence|Akazienzaun|block/acacia_planks|Baustoffe
+acacia_fence_gate|Akazienzauntor|block/acacia_planks|Baustoffe
+acacia_door|Akazientür|item/acacia_door|Baustoffe
+acacia_trapdoor|Akazienfalltür|block/acacia_trapdoor|Baustoffe
+acacia_button|Akazienknopf|block/acacia_planks|Baustoffe
+acacia_pressure_plate|Akaziendruckplatte|block/acacia_planks|Redstone
+acacia_sign|Akazienschild|item/acacia_sign|Baustoffe
+acacia_boat|Akazienboot|item/acacia_boat|Baustoffe
+acacia_leaves|Akazienlaub|block/acacia_leaves|Baustoffe
+acacia_sapling|Akaziensetzling|block/acacia_sapling|Baustoffe
+stripped_acacia_log|Entrindeter Akazienstamm|block/stripped_acacia_log|Baustoffe
+dark_oak_log|Schwarzeichenstamm|block/dark_oak_log|Baustoffe
+dark_oak_planks|Schwarzeichenbretter|block/dark_oak_planks|Baustoffe
+dark_oak_slab|Schwarzeichenstufe|block/dark_oak_planks|Baustoffe
+dark_oak_stairs|Schwarzeichentreppe|block/dark_oak_planks|Baustoffe
+dark_oak_fence|Schwarzeichenzaun|block/dark_oak_planks|Baustoffe
+dark_oak_fence_gate|Schwarzeichenzauntor|block/dark_oak_planks|Baustoffe
+dark_oak_door|Schwarzeichentür|item/dark_oak_door|Baustoffe
+dark_oak_trapdoor|Schwarzeichenfalltür|block/dark_oak_trapdoor|Baustoffe
+dark_oak_button|Schwarzeichenknopf|block/dark_oak_planks|Baustoffe
+dark_oak_pressure_plate|Schwarzeichendruckplatte|block/dark_oak_planks|Redstone
+dark_oak_sign|Schwarzeichenschild|item/dark_oak_sign|Baustoffe
+dark_oak_boat|Schwarzeichenboot|item/dark_oak_boat|Baustoffe
+dark_oak_leaves|Schwarzeichenlaub|block/dark_oak_leaves|Baustoffe
+dark_oak_sapling|Schwarzeichensetzling|block/dark_oak_sapling|Baustoffe
+stripped_dark_oak_log|Entrindeter Schwarzeichenstamm|block/stripped_dark_oak_log|Baustoffe
+mangrove_log|Mangrovenstamm|block/mangrove_log|Baustoffe
+mangrove_planks|Mangrovenbretter|block/mangrove_planks|Baustoffe
+mangrove_slab|Mangrovenstufe|block/mangrove_planks|Baustoffe
+mangrove_stairs|Mangroventreppe|block/mangrove_planks|Baustoffe
+mangrove_fence|Mangrovenzaun|block/mangrove_planks|Baustoffe
+mangrove_fence_gate|Mangrovenzauntor|block/mangrove_planks|Baustoffe
+mangrove_door|Mangroventür|item/mangrove_door|Baustoffe
+mangrove_trapdoor|Mangrovenfalltür|block/mangrove_trapdoor|Baustoffe
+mangrove_button|Mangrovenknopf|block/mangrove_planks|Baustoffe
+mangrove_pressure_plate|Mangrovendruckplatte|block/mangrove_planks|Redstone
+mangrove_sign|Mangrovenschild|item/mangrove_sign|Baustoffe
+mangrove_boat|Mangrovenboot|item/mangrove_boat|Baustoffe
+mangrove_leaves|Mangrovenlaub|block/mangrove_leaves|Baustoffe
+mangrove_sapling|Mangrovensetzling|block/mangrove_sapling|Baustoffe
+stripped_mangrove_log|Entrindeter Mangrovenstamm|block/stripped_mangrove_log|Baustoffe
+cherry_log|Kirschstamm|block/cherry_log|Baustoffe
+cherry_planks|Kirschbretter|block/cherry_planks|Baustoffe
+cherry_slab|Kirschstufe|block/cherry_planks|Baustoffe
+cherry_stairs|Kirschtreppe|block/cherry_planks|Baustoffe
+cherry_fence|Kirschzaun|block/cherry_planks|Baustoffe
+cherry_fence_gate|Kirschzauntor|block/cherry_planks|Baustoffe
+cherry_door|Kirschtür|item/cherry_door|Baustoffe
+cherry_trapdoor|Kirschfalltür|block/cherry_trapdoor|Baustoffe
+cherry_button|Kirschknopf|block/cherry_planks|Baustoffe
+cherry_pressure_plate|Kirschdruckplatte|block/cherry_planks|Redstone
+cherry_sign|Kirschschild|item/cherry_sign|Baustoffe
+cherry_boat|Kirschboot|item/cherry_boat|Baustoffe
+cherry_leaves|Kirschlaub|block/cherry_leaves|Baustoffe
+cherry_sapling|Kirschsetzling|block/cherry_sapling|Baustoffe
+stripped_cherry_log|Entrindeter Kirschstamm|block/stripped_cherry_log|Baustoffe
+pale_oak_log|Blasseichenstamm|block/pale_oak_log|Baustoffe
+pale_oak_planks|Blasseichenbretter|block/pale_oak_planks|Baustoffe
+pale_oak_slab|Blasseichenstufe|block/pale_oak_planks|Baustoffe
+pale_oak_stairs|Blasseichentreppe|block/pale_oak_planks|Baustoffe
+pale_oak_fence|Blasseichenzaun|block/pale_oak_planks|Baustoffe
+pale_oak_fence_gate|Blasseichenzauntor|block/pale_oak_planks|Baustoffe
+pale_oak_door|Blasseichentür|item/pale_oak_door|Baustoffe
+pale_oak_trapdoor|Blasseichenfalltür|block/pale_oak_trapdoor|Baustoffe
+pale_oak_button|Blasseichenknopf|block/pale_oak_planks|Baustoffe
+pale_oak_pressure_plate|Blasseichendruckplatte|block/pale_oak_planks|Redstone
+pale_oak_sign|Blasseichenschild|item/pale_oak_sign|Baustoffe
+pale_oak_boat|Blasseichenboot|item/pale_oak_boat|Baustoffe
+pale_oak_leaves|Blasseichenlaub|block/pale_oak_leaves|Baustoffe
+pale_oak_sapling|Blasseichensetzling|block/pale_oak_sapling|Baustoffe
+stripped_pale_oak_log|Entrindeter Blasseichenstamm|block/stripped_pale_oak_log|Baustoffe
+crimson_stem|Karmesinstiel|block/crimson_stem|Baustoffe
+crimson_planks|Karmesinbretter|block/crimson_planks|Baustoffe
+crimson_slab|Karmesinstufe|block/crimson_planks|Baustoffe
+crimson_stairs|Karmesintreppe|block/crimson_planks|Baustoffe
+crimson_fence|Karmesinzaun|block/crimson_planks|Baustoffe
+crimson_door|Karmesintür|item/crimson_door|Baustoffe
+crimson_trapdoor|Karmesinfalltür|block/crimson_trapdoor|Baustoffe
+crimson_sign|Karmesinschild|item/crimson_sign|Baustoffe
+crimson_nylium|Karmesin-Myzel|block/crimson_nylium|Baustoffe
+crimson_fungus|Karmesinpilz|block/crimson_fungus|Baustoffe
+warped_stem|Wirrstiel|block/warped_stem|Baustoffe
+warped_planks|Wirrbretter|block/warped_planks|Baustoffe
+warped_slab|Wirrstufe|block/warped_planks|Baustoffe
+warped_stairs|Wirrtreppe|block/warped_planks|Baustoffe
+warped_fence|Wirrzaun|block/warped_planks|Baustoffe
+warped_door|Wirrtür|item/warped_door|Baustoffe
+warped_trapdoor|Wirrfalltür|block/warped_trapdoor|Baustoffe
+warped_sign|Wirrschild|item/warped_sign|Baustoffe
+warped_nylium|Wirr-Myzel|block/warped_nylium|Baustoffe
+warped_fungus|Wirrpilz|block/warped_fungus|Baustoffe
+bamboo|Bambus|block/bamboo|Baustoffe
+bamboo_block|Bambusblock|block/bamboo_block|Baustoffe
+bamboo_planks|Bambusbretter|block/bamboo_planks|Baustoffe
+bamboo_raft|Bambusfloß|item/bamboo_raft|Baustoffe
+stick|Stock|item/stick|Baustoffe
+crafting_table|Werkbank|block/crafting_table_front|Baustoffe
+ladder|Leiter|block/ladder|Baustoffe
+bookshelf|Bücherregal|block/bookshelf|Baustoffe
+chest|Truhe|item/chest|Baustoffe
+barrel|Fass|block/barrel_side|Baustoffe
+hopper|Trichter|item/hopper|Baustoffe
+stone|Stein|block/stone|Baustoffe
+cobblestone|Bruchstein|block/cobblestone|Baustoffe
+mossy_cobblestone|Bemooster Bruchstein|block/mossy_cobblestone|Baustoffe
+stone_bricks|Steinziegel|block/stone_bricks|Baustoffe
+mossy_stone_bricks|Bemooste Steinziegel|block/mossy_stone_bricks|Baustoffe
+cracked_stone_bricks|Rissige Steinziegel|block/cracked_stone_bricks|Baustoffe
+chiseled_stone_bricks|Gemeißelte Steinziegel|block/chiseled_stone_bricks|Baustoffe
+smooth_stone|Glatter Stein|block/smooth_stone|Baustoffe
+andesite|Andesit|block/andesite|Baustoffe
+diorite|Diorit|block/diorite|Baustoffe
+granite|Granit|block/granite|Baustoffe
+polished_andesite|Polierter Andesit|block/polished_andesite|Baustoffe
+polished_diorite|Polierter Diorit|block/polished_diorite|Baustoffe
+polished_granite|Polierter Granit|block/polished_granite|Baustoffe
+deepslate|Tiefenschiefer|block/deepslate|Baustoffe
+cobbled_deepslate|Tiefenschiefer-Bruchstein|block/cobbled_deepslate|Baustoffe
+polished_deepslate|Polierter Tiefenschiefer|block/polished_deepslate|Baustoffe
+deepslate_bricks|Tiefenschieferziegel|block/deepslate_bricks|Baustoffe
+deepslate_tiles|Tiefenschieferfliesen|block/deepslate_tiles|Baustoffe
+blackstone|Schwarzstein|block/blackstone|Baustoffe
+polished_blackstone|Polierter Schwarzstein|block/polished_blackstone|Baustoffe
+polished_blackstone_bricks|Polierte Schwarzsteinziegel|block/polished_blackstone_bricks|Baustoffe
+gilded_blackstone|Vergoldeter Schwarzstein|block/gilded_blackstone|Baustoffe
+basalt|Basalt|block/basalt_side|Baustoffe
+smooth_basalt|Glatter Basalt|block/smooth_basalt|Baustoffe
+tuff|Tuffstein|block/tuff|Baustoffe
+calcite|Calcit|block/calcite|Baustoffe
+dripstone_block|Tropfsteinblock|block/dripstone_block|Baustoffe
+sandstone|Sandstein|block/sandstone|Baustoffe
+red_sandstone|Roter Sandstein|block/red_sandstone|Baustoffe
+smooth_sandstone|Glatter Sandstein|block/sandstone_top|Baustoffe
+bricks|Ziegelsteine|block/bricks|Baustoffe
+nether_bricks|Netherziegel|block/nether_bricks|Baustoffe
+red_nether_bricks|Rote Netherziegel|block/red_nether_bricks|Baustoffe
+end_stone|Endstein|block/end_stone|Baustoffe
+end_stone_bricks|Endsteinziegel|block/end_stone_bricks|Baustoffe
+purpur_block|Purpurblock|block/purpur_block|Baustoffe
+prismarine|Prismarin|block/prismarine|Baustoffe
+prismarine_bricks|Prismarinziegel|block/prismarine_bricks|Baustoffe
+dark_prismarine|Dunkler Prismarin|block/dark_prismarine|Baustoffe
+sea_lantern|Seelaterne|block/sea_lantern|Baustoffe
+obsidian|Obsidian|block/obsidian|Baustoffe
+crying_obsidian|Weinender Obsidian|block/crying_obsidian|Baustoffe
+netherrack|Netherrack|block/netherrack|Baustoffe
+soul_sand|Seelensand|block/soul_sand|Baustoffe
+soul_soil|Seelenerde|block/soul_soil|Baustoffe
+magma_block|Magmablock|block/magma|Baustoffe
+glowstone|Leuchtstein|block/glowstone|Baustoffe
+quartz_block|Quarzblock|block/quartz_block_side|Baustoffe
+quartz_pillar|Quarzsäule|block/quartz_pillar|Baustoffe
+smooth_quartz|Glatter Quarz|block/quartz_block_bottom|Baustoffe
+chiseled_quartz_block|Gemeißelter Quarz|block/chiseled_quartz_block|Baustoffe
+mud_bricks|Lehmziegel|block/mud_bricks|Baustoffe
+packed_mud|Gestampfter Lehm|block/packed_mud|Baustoffe
+terracotta|Terrakotta|block/terracotta|Baustoffe
+clay|Tonblock|block/clay|Baustoffe
+stone_slab|Steinstufe|block/stone|Baustoffe
+stone_stairs|Steintreppe|block/stone|Baustoffe
+cobblestone_slab|Bruchsteinstufe|block/cobblestone|Baustoffe
+cobblestone_stairs|Bruchsteintreppe|block/cobblestone|Baustoffe
+cobblestone_wall|Bruchsteinmauer|block/cobblestone|Baustoffe
+stone_brick_stairs|Steinziegeltreppe|block/stone_bricks|Baustoffe
+stone_brick_wall|Steinziegelmauer|block/stone_bricks|Baustoffe
+brick_stairs|Ziegeltreppe|block/bricks|Baustoffe
+sandstone_stairs|Sandsteintreppe|block/sandstone|Baustoffe
+dirt|Erde|block/dirt|Baustoffe
+grass_block|Grasblock|block/grass_block_side|Baustoffe
+coarse_dirt|Grobe Erde|block/coarse_dirt|Baustoffe
+podzol|Podsol|block/podzol_side|Baustoffe
+mycelium|Myzel|block/mycelium_side|Baustoffe
+rooted_dirt|Wurzelerde|block/rooted_dirt|Baustoffe
+mud|Schlamm|block/mud|Baustoffe
+gravel|Kies|block/gravel|Baustoffe
+sand|Sand|block/sand|Baustoffe
+red_sand|Roter Sand|block/red_sand|Baustoffe
+moss_block|Moosblock|block/moss_block|Baustoffe
+clay_ball|Tonklumpen|item/clay_ball|Baustoffe
+snow_block|Schneeblock|block/snow|Baustoffe
+snowball|Schneeball|item/snowball|Baustoffe
+ice|Eis|block/ice|Baustoffe
+packed_ice|Packeis|block/packed_ice|Baustoffe
+blue_ice|Blaues Eis|block/blue_ice|Baustoffe
+sponge|Schwamm|block/sponge|Baustoffe
+wet_sponge|Nasser Schwamm|block/wet_sponge|Baustoffe
+amethyst_block|Amethystblock|block/amethyst_block|Baustoffe
+cactus|Kaktus|block/cactus_side|Baustoffe
+sugar_cane|Zuckerrohr|item/sugar_cane|Baustoffe
+pumpkin|Kürbis|block/pumpkin_side|Baustoffe
+carved_pumpkin|Geschnitzter Kürbis|block/carved_pumpkin|Baustoffe
+jack_o_lantern|Kürbislaterne|block/jack_o_lantern|Baustoffe
+melon|Melone|block/melon_side|Baustoffe
+hay_block|Heuballen|block/hay_block_side|Baustoffe
+vine|Ranken|block/vine|Baustoffe
+lily_pad|Seerosenblatt|block/lily_pad|Baustoffe
+kelp|Seetang|item/kelp|Baustoffe
+dried_kelp_block|Getrockneter Seetangblock|block/dried_kelp_side|Baustoffe
+sea_pickle|Seegurke|item/sea_pickle|Baustoffe
+cobweb|Spinnennetz|block/cobweb|Baustoffe
+bone_block|Knochenblock|block/bone_block_side|Baustoffe
+honeycomb_block|Honigwabenblock|block/honeycomb_block|Baustoffe
+honey_block|Honigblock|block/honey_block_side|Baustoffe
+slime_block|Schleimblock|block/slime_block|Baustoffe
+shroomlight|Pilzlicht|block/shroomlight|Baustoffe
+red_mushroom|Roter Pilz|block/red_mushroom|Baustoffe
+brown_mushroom|Brauner Pilz|block/brown_mushroom|Baustoffe
+red_mushroom_block|Roter Pilzblock|block/red_mushroom_block|Baustoffe
+brown_mushroom_block|Brauner Pilzblock|block/brown_mushroom_block|Baustoffe
+nether_wart_block|Wucherwarzenblock|block/nether_wart_block|Baustoffe
+warped_wart_block|Wirrwarzenblock|block/warped_wart_block|Baustoffe
+sculk|Sculk|block/sculk|Baustoffe
+glass|Glas|block/glass|Baustoffe
+tinted_glass|Getöntes Glas|block/tinted_glass|Baustoffe
+glass_pane|Glasscheibe|block/glass|Baustoffe
+dragon_egg|Drachenei|block/dragon_egg|Baustoffe
+beacon|Leuchtfeuer|block/beacon|Baustoffe
+end_rod|Endstab|item/end_rod|Baustoffe
+ender_chest|Endertruhe|item/ender_chest|Baustoffe
+conduit|Aquisator|item/conduit|Baustoffe
+dandelion|Löwenzahn|block/dandelion|Baustoffe
+poppy|Mohn|block/poppy|Baustoffe
+blue_orchid|Blaue Orchidee|block/blue_orchid|Baustoffe
+allium|Zierlauch|block/allium|Baustoffe
+azure_bluet|Porzellansternchen|block/azure_bluet|Baustoffe
+oxeye_daisy|Margerite|block/oxeye_daisy|Baustoffe
+cornflower|Kornblume|block/cornflower|Baustoffe
+lily_of_the_valley|Maiglöckchen|block/lily_of_the_valley|Baustoffe
+wither_rose|Wither-Rose|block/wither_rose|Baustoffe
+sunflower|Sonnenblume|block/sunflower|Baustoffe
+lilac|Flieder|block/lilac|Baustoffe
+rose_bush|Rosenbusch|block/rose_bush|Baustoffe
+peony|Pfingstrose|block/peony|Baustoffe
+torchflower|Fackellilie|block/torchflower|Baustoffe
+pink_petals|Rosa Blütenblätter|block/pink_petals|Baustoffe
+coal_ore|Kohleerz|block/coal_ore|Baustoffe
+iron_ore|Eisenerz|block/iron_ore|Baustoffe
+copper_ore|Kupfererz|block/copper_ore|Baustoffe
+gold_ore|Golderz|block/gold_ore|Baustoffe
+redstone_ore|Redstone-Erz|block/redstone_ore|Baustoffe
+lapis_ore|Lapislazuli-Erz|block/lapis_ore|Baustoffe
+diamond_ore|Diamanterz|block/diamond_ore|Baustoffe
+emerald_ore|Smaragderz|block/emerald_ore|Baustoffe
+nether_gold_ore|Nethergolderz|block/nether_gold_ore|Baustoffe
+nether_quartz_ore|Netherquarzerz|block/nether_quartz_ore|Baustoffe
+ancient_debris|Antiker Schutt|block/ancient_debris_side|Baustoffe
+deepslate_diamond_ore|Tiefenschiefer-Diamanterz|block/deepslate_diamond_ore|Baustoffe
+deepslate_iron_ore|Tiefenschiefer-Eisenerz|block/deepslate_iron_ore|Baustoffe
+deepslate_gold_ore|Tiefenschiefer-Golderz|block/deepslate_gold_ore|Baustoffe
+deepslate_redstone_ore|Tiefenschiefer-Redstone-Erz|block/deepslate_redstone_ore|Baustoffe
+deepslate_emerald_ore|Tiefenschiefer-Smaragderz|block/deepslate_emerald_ore|Baustoffe
+deepslate_lapis_ore|Tiefenschiefer-Lapiserz|block/deepslate_lapis_ore|Baustoffe
+deepslate_coal_ore|Tiefenschiefer-Kohleerz|block/deepslate_coal_ore|Baustoffe
+deepslate_copper_ore|Tiefenschiefer-Kupfererz|block/deepslate_copper_ore|Baustoffe
+coal|Kohle|item/coal|Baustoffe
+charcoal|Holzkohle|item/charcoal|Baustoffe
+raw_iron|Roheisen|item/raw_iron|Baustoffe
+raw_copper|Rohkupfer|item/raw_copper|Baustoffe
+raw_gold|Rohgold|item/raw_gold|Baustoffe
+iron_ingot|Eisenbarren|item/iron_ingot|Baustoffe
+copper_ingot|Kupferbarren|item/copper_ingot|Baustoffe
+gold_ingot|Goldbarren|item/gold_ingot|Baustoffe
+netherite_ingot|Netheritbarren|item/netherite_ingot|Baustoffe
+netherite_scrap|Netherit-Schrott|item/netherite_scrap|Baustoffe
+diamond|Diamant|item/diamond|Baustoffe
+emerald|Smaragd|item/emerald|Baustoffe
+lapis_lazuli|Lapislazuli|item/lapis_lazuli|Baustoffe
+quartz|Netherquarz|item/quartz|Baustoffe
+redstone|Redstone-Staub|item/redstone|Baustoffe
+amethyst_shard|Amethystscherbe|item/amethyst_shard|Baustoffe
+iron_nugget|Eisenklumpen|item/iron_nugget|Baustoffe
+gold_nugget|Goldklumpen|item/gold_nugget|Baustoffe
+flint|Feuerstein|item/flint|Baustoffe
+brick|Ziegel|item/brick|Baustoffe
+nether_brick|Netherziegel (Item)|item/nether_brick|Baustoffe
+coal_block|Kohleblock|block/coal_block|Baustoffe
+iron_block|Eisenblock|block/iron_block|Baustoffe
+copper_block|Kupferblock|block/copper_block|Baustoffe
+gold_block|Goldblock|block/gold_block|Baustoffe
+redstone_block|Redstoneblock|block/redstone_block|Baustoffe
+lapis_block|Lapislazuliblock|block/lapis_block|Baustoffe
+diamond_block|Diamantblock|block/diamond_block|Baustoffe
+emerald_block|Smaragdblock|block/emerald_block|Baustoffe
+netherite_block|Netheritblock|block/netherite_block|Baustoffe
+raw_iron_block|Roheisenblock|block/raw_iron_block|Baustoffe
+raw_copper_block|Rohkupferblock|block/raw_copper_block|Baustoffe
+raw_gold_block|Rohgoldblock|block/raw_gold_block|Baustoffe
+cut_copper|Geschnittenes Kupfer|block/cut_copper|Baustoffe
+lightning_rod|Blitzableiter|block/lightning_rod|Baustoffe
+wooden_pickaxe|Holz-Spitzhacke|item/wooden_pickaxe|Tools
+wooden_axe|Holz-Axt|item/wooden_axe|Tools
+wooden_shovel|Holz-Schaufel|item/wooden_shovel|Tools
+wooden_hoe|Holz-Hacke|item/wooden_hoe|Tools
+wooden_sword|Holz-Schwert|item/wooden_sword|Waffen
+stone_pickaxe|Stein-Spitzhacke|item/stone_pickaxe|Tools
+stone_axe|Stein-Axt|item/stone_axe|Tools
+stone_shovel|Stein-Schaufel|item/stone_shovel|Tools
+stone_hoe|Stein-Hacke|item/stone_hoe|Tools
+stone_sword|Stein-Schwert|item/stone_sword|Waffen
+iron_pickaxe|Eisen-Spitzhacke|item/iron_pickaxe|Tools
+iron_axe|Eisen-Axt|item/iron_axe|Tools
+iron_shovel|Eisen-Schaufel|item/iron_shovel|Tools
+iron_hoe|Eisen-Hacke|item/iron_hoe|Tools
+iron_sword|Eisen-Schwert|item/iron_sword|Waffen
+golden_pickaxe|Gold-Spitzhacke|item/golden_pickaxe|Tools
+golden_axe|Gold-Axt|item/golden_axe|Tools
+golden_shovel|Gold-Schaufel|item/golden_shovel|Tools
+golden_hoe|Gold-Hacke|item/golden_hoe|Tools
+golden_sword|Gold-Schwert|item/golden_sword|Waffen
+diamond_pickaxe|Diamant-Spitzhacke|item/diamond_pickaxe|Tools
+diamond_axe|Diamant-Axt|item/diamond_axe|Tools
+diamond_shovel|Diamant-Schaufel|item/diamond_shovel|Tools
+diamond_hoe|Diamant-Hacke|item/diamond_hoe|Tools
+diamond_sword|Diamant-Schwert|item/diamond_sword|Waffen
+netherite_pickaxe|Netherit-Spitzhacke|item/netherite_pickaxe|Tools
+netherite_axe|Netherit-Axt|item/netherite_axe|Tools
+netherite_shovel|Netherit-Schaufel|item/netherite_shovel|Tools
+netherite_hoe|Netherit-Hacke|item/netherite_hoe|Tools
+netherite_sword|Netherit-Schwert|item/netherite_sword|Waffen
+leather_helmet|Leder-Helm|item/leather_helmet|Rüstung
+leather_chestplate|Leder-Brustpanzer|item/leather_chestplate|Rüstung
+leather_leggings|Leder-Hose|item/leather_leggings|Rüstung
+leather_boots|Leder-Stiefel|item/leather_boots|Rüstung
+chainmail_helmet|Kette-Helm|item/chainmail_helmet|Rüstung
+chainmail_chestplate|Kette-Brustpanzer|item/chainmail_chestplate|Rüstung
+chainmail_leggings|Kette-Hose|item/chainmail_leggings|Rüstung
+chainmail_boots|Kette-Stiefel|item/chainmail_boots|Rüstung
+iron_helmet|Eisen-Helm|item/iron_helmet|Rüstung
+iron_chestplate|Eisen-Brustpanzer|item/iron_chestplate|Rüstung
+iron_leggings|Eisen-Hose|item/iron_leggings|Rüstung
+iron_boots|Eisen-Stiefel|item/iron_boots|Rüstung
+golden_helmet|Gold-Helm|item/golden_helmet|Rüstung
+golden_chestplate|Gold-Brustpanzer|item/golden_chestplate|Rüstung
+golden_leggings|Gold-Hose|item/golden_leggings|Rüstung
+golden_boots|Gold-Stiefel|item/golden_boots|Rüstung
+diamond_helmet|Diamant-Helm|item/diamond_helmet|Rüstung
+diamond_chestplate|Diamant-Brustpanzer|item/diamond_chestplate|Rüstung
+diamond_leggings|Diamant-Hose|item/diamond_leggings|Rüstung
+diamond_boots|Diamant-Stiefel|item/diamond_boots|Rüstung
+netherite_helmet|Netherit-Helm|item/netherite_helmet|Rüstung
+netherite_chestplate|Netherit-Brustpanzer|item/netherite_chestplate|Rüstung
+netherite_leggings|Netherit-Hose|item/netherite_leggings|Rüstung
+netherite_boots|Netherit-Stiefel|item/netherite_boots|Rüstung
+turtle_helmet|Schildkrötenpanzer|item/turtle_helmet|Rüstung
+elytra|Elytren|item/elytra|Rüstung
+shield|Schild|item/shield|Rüstung
+totem_of_undying|Totem der Unsterblichkeit|item/totem_of_undying|Rüstung
+bow|Bogen|item/bow|Waffen
+crossbow|Armbrust|item/crossbow|Waffen
+trident|Dreizack|item/trident|Waffen
+mace|Streitkolben|item/mace|Waffen
+arrow|Pfeil|item/arrow|Waffen
+spectral_arrow|Leuchtpfeil|item/spectral_arrow|Waffen
+wind_charge|Windkugel|item/wind_charge|Waffen
+fishing_rod|Angel|item/fishing_rod|Tools
+shears|Schere|item/shears|Tools
+flint_and_steel|Feuerzeug|item/flint_and_steel|Tools
+brush|Pinsel|item/brush|Tools
+spyglass|Fernrohr|item/spyglass|Tools
+compass|Kompass|item/compass|Tools
+recovery_compass|Rückkehrkompass|item/recovery_compass|Tools
+clock|Uhr|item/clock|Tools
+bucket|Eimer|item/bucket|Tools
+water_bucket|Wassereimer|item/water_bucket|Tools
+lava_bucket|Lavaeimer|item/lava_bucket|Tools
+milk_bucket|Milcheimer|item/milk_bucket|Tools
+powder_snow_bucket|Pulverschneeeimer|item/powder_snow_bucket|Tools
+carrot_on_a_stick|Karottenangel|item/carrot_on_a_stick|Tools
+warped_fungus_on_a_stick|Wirrpilzangel|item/warped_fungus_on_a_stick|Tools
+lead|Leine|item/lead|Tools
+name_tag|Namensschild|item/name_tag|Tools
+saddle|Sattel|item/saddle|Tools
+map|Karte|item/map|Tools
+filled_map|Gefüllte Karte|item/filled_map|Tools
+writable_book|Buch und Feder|item/writable_book|Tools
+book|Buch|item/book|Tools
+enchanted_book|Verzaubertes Buch|item/enchanted_book|Tools
+experience_bottle|Erfahrungsfläschchen|item/experience_bottle|Tools
+ender_pearl|Enderperle|item/ender_pearl|Tools
+ender_eye|Enderauge|item/ender_eye|Tools
+firework_rocket|Feuerwerksrakete|item/firework_rocket|Tools
+netherite_upgrade_smithing_template|Netherit-Upgrade-Schmiedevorlage|item/netherite_upgrade_smithing_template|Tools
+wolf_armor|Wolfsrüstung|item/wolf_armor|Rüstung
+iron_horse_armor|Eisen-Pferderüstung|item/iron_horse_armor|Rüstung
+golden_horse_armor|Gold-Pferderüstung|item/golden_horse_armor|Rüstung
+diamond_horse_armor|Diamant-Pferderüstung|item/diamond_horse_armor|Rüstung
+redstone_torch|Redstone-Fackel|block/redstone_torch|Redstone
+repeater|Redstone-Verstärker|item/repeater|Redstone
+comparator|Redstone-Komparator|item/comparator|Redstone
+piston|Kolben|block/piston_side|Redstone
+sticky_piston|Klebriger Kolben|block/piston_side|Redstone
+observer|Beobachter|block/observer_front|Redstone
+dispenser|Werfer|block/dispenser_front|Redstone
+dropper|Spender|block/dropper_front|Redstone
+lever|Hebel|block/lever|Redstone
+stone_button|Steinknopf|block/stone|Redstone
+stone_pressure_plate|Stein-Druckplatte|block/stone|Redstone
+heavy_weighted_pressure_plate|Schwere Druckplatte|block/iron_block|Redstone
+light_weighted_pressure_plate|Leichte Druckplatte|block/gold_block|Redstone
+tripwire_hook|Haken für Stolperdraht|block/tripwire_hook|Redstone
+string|Faden|item/string|Redstone
+tnt|TNT|block/tnt_side|Redstone
+note_block|Notenblock|block/note_block|Redstone
+jukebox|Plattenspieler|block/jukebox_side|Redstone
+daylight_detector|Tageslichtsensor|block/daylight_detector_top|Redstone
+target|Zielblock|block/target_side|Redstone
+redstone_lamp|Redstone-Lampe|block/redstone_lamp|Redstone
+sculk_sensor|Sculk-Sensor|block/sculk_sensor_top|Redstone
+rail|Schiene|block/rail|Redstone
+powered_rail|Antriebsschiene|block/powered_rail|Redstone
+activator_rail|Aktivierungsschiene|block/activator_rail|Redstone
+minecart|Lore|item/minecart|Redstone
+chest_minecart|Truhenlore|item/chest_minecart|Redstone
+hopper_minecart|Trichterlore|item/hopper_minecart|Redstone
+tnt_minecart|TNT-Lore|item/tnt_minecart|Redstone
+furnace_minecart|Ofenlore|item/furnace_minecart|Redstone
+copper_bulb|Kupferlampe|block/copper_bulb|Redstone
+crafter|Handwerker|block/crafter_top|Redstone
+lectern|Lesepult|block/lectern_front|Redstone
+bell|Glocke|item/bell|Redstone
+lantern|Laterne|item/lantern|Redstone
+soul_lantern|Seelenlaterne|item/soul_lantern|Redstone
+torch|Fackel|block/torch|Redstone
+soul_torch|Seelenfackel|block/soul_torch|Redstone
+detector_rail|Sensorschiene|block/detector_rail|Redstone
+furnace|Ofen|block/furnace_front|Baustoffe
+blast_furnace|Schmelzofen|block/blast_furnace_front|Baustoffe
+smoker|Räucherofen|block/smoker_front|Baustoffe
+anvil|Amboss|block/anvil|Baustoffe
+enchanting_table|Zaubertisch|block/enchanting_table_top|Baustoffe
+brewing_stand|Braustand|item/brewing_stand|Baustoffe
+cauldron|Kessel|item/cauldron|Baustoffe
+grindstone|Schleifstein|block/grindstone_side|Baustoffe
+smithing_table|Schmiedetisch|block/smithing_table_front|Baustoffe
+loom|Webstuhl|block/loom_front|Baustoffe
+cartography_table|Kartentisch|block/cartography_table_side1|Baustoffe
+fletching_table|Bogenschmiedetisch|block/fletching_table_front|Baustoffe
+stonecutter|Steinsäge|block/stonecutter_side|Baustoffe
+composter|Komposter|block/composter_side|Baustoffe
+campfire|Lagerfeuer|item/campfire|Baustoffe
+soul_campfire|Seelenlagerfeuer|item/soul_campfire|Baustoffe
+scaffolding|Gerüst|block/scaffolding_side|Baustoffe
+respawn_anchor|Wiederbelebungsanker|block/respawn_anchor_side0|Baustoffe
+lodestone|Leitstein|block/lodestone_side|Baustoffe
+item_frame|Bilderrahmen|item/item_frame|Baustoffe
+glow_item_frame|Leuchtrahmen|item/glow_item_frame|Baustoffe
+painting|Gemälde|item/painting|Baustoffe
+armor_stand|Rüstungsständer|item/armor_stand|Baustoffe
+flower_pot|Blumentopf|item/flower_pot|Baustoffe
+decorated_pot|Dekorierter Krug|item/decorated_pot|Baustoffe
+bed|Bett|item/red_bed|Baustoffe
+shulker_shell|Schulkerschale|item/shulker_shell|Baustoffe
+shulker_box|Schulkerkiste|item/shulker_box|Baustoffe
+apple|Apfel|item/apple|Baustoffe
+golden_apple|Goldener Apfel|item/golden_apple|Baustoffe
+enchanted_golden_apple|Verzauberter goldener Apfel|item/enchanted_golden_apple|Baustoffe
+bread|Brot|item/bread|Baustoffe
+cooked_beef|Steak|item/cooked_beef|Baustoffe
+beef|Rohes Rindfleisch|item/beef|Baustoffe
+cooked_porkchop|Gebratenes Schweinefleisch|item/cooked_porkchop|Baustoffe
+porkchop|Rohes Schweinefleisch|item/porkchop|Baustoffe
+cooked_chicken|Gebratenes Hähnchen|item/cooked_chicken|Baustoffe
+chicken|Rohes Hähnchen|item/chicken|Baustoffe
+cooked_mutton|Gebratenes Hammelfleisch|item/cooked_mutton|Baustoffe
+cooked_rabbit|Gebratenes Kaninchen|item/cooked_rabbit|Baustoffe
+cooked_cod|Gebackener Kabeljau|item/cooked_cod|Baustoffe
+cooked_salmon|Gebackener Lachs|item/cooked_salmon|Baustoffe
+cod|Roher Kabeljau|item/cod|Baustoffe
+salmon|Roher Lachs|item/salmon|Baustoffe
+carrot|Karotte|item/carrot|Baustoffe
+golden_carrot|Goldene Karotte|item/golden_carrot|Baustoffe
+potato|Kartoffel|item/potato|Baustoffe
+baked_potato|Ofenkartoffel|item/baked_potato|Baustoffe
+beetroot|Rote Bete|item/beetroot|Baustoffe
+melon_slice|Melonenscheibe|item/melon_slice|Baustoffe
+glistering_melon_slice|Glitzernde Melonenscheibe|item/glistering_melon_slice|Baustoffe
+sweet_berries|Süßbeeren|item/sweet_berries|Baustoffe
+glow_berries|Leuchtbeeren|item/glow_berries|Baustoffe
+pumpkin_pie|Kürbiskuchen|item/pumpkin_pie|Baustoffe
+cake|Kuchen|item/cake|Baustoffe
+cookie|Keks|item/cookie|Baustoffe
+mushroom_stew|Pilzsuppe|item/mushroom_stew|Baustoffe
+rabbit_stew|Kaninchenragout|item/rabbit_stew|Baustoffe
+beetroot_soup|Rote-Bete-Suppe|item/beetroot_soup|Baustoffe
+dried_kelp|Getrockneter Seetang|item/dried_kelp|Baustoffe
+honey_bottle|Honigflasche|item/honey_bottle|Baustoffe
+chorus_fruit|Chorusfrucht|item/chorus_fruit|Baustoffe
+wheat|Weizen|item/wheat|Baustoffe
+wheat_seeds|Weizensamen|item/wheat_seeds|Baustoffe
+pumpkin_seeds|Kürbiskerne|item/pumpkin_seeds|Baustoffe
+melon_seeds|Melonenkerne|item/melon_seeds|Baustoffe
+beetroot_seeds|Rote-Bete-Samen|item/beetroot_seeds|Baustoffe
+cocoa_beans|Kakaobohnen|item/cocoa_beans|Baustoffe
+nether_wart|Netherwarze|item/nether_wart|Baustoffe
+sugar|Zucker|item/sugar|Baustoffe
+egg|Ei|item/egg|Baustoffe
+milk|Milch|item/milk|Baustoffe
+feather|Feder|item/feather|Baustoffe
+leather|Leder|item/leather|Baustoffe
+rabbit_hide|Kaninchenfell|item/rabbit_hide|Baustoffe
+rabbit_foot|Hasenpfote|item/rabbit_foot|Baustoffe
+bone|Knochen|item/bone|Baustoffe
+bone_meal|Knochenmehl|item/bone_meal|Baustoffe
+gunpowder|Schießpulver|item/gunpowder|Baustoffe
+spider_eye|Spinnenauge|item/spider_eye|Baustoffe
+fermented_spider_eye|Fermentiertes Spinnenauge|item/fermented_spider_eye|Baustoffe
+rotten_flesh|Verrottetes Fleisch|item/rotten_flesh|Baustoffe
+ink_sac|Tintenbeutel|item/ink_sac|Baustoffe
+glow_ink_sac|Leuchtender Tintenbeutel|item/glow_ink_sac|Baustoffe
+honeycomb|Honigwabe|item/honeycomb|Baustoffe
+slime_ball|Schleimball|item/slime_ball|Baustoffe
+magma_cream|Magmacreme|item/magma_cream|Baustoffe
+blaze_rod|Lohenrute|item/blaze_rod|Baustoffe
+blaze_powder|Lohenstaub|item/blaze_powder|Baustoffe
+ghast_tear|Ghastträne|item/ghast_tear|Baustoffe
+nether_star|Nether-Stern|item/nether_star|Baustoffe
+dragon_breath|Drachenatem|item/dragon_breath|Baustoffe
+heart_of_the_sea|Herz des Meeres|item/heart_of_the_sea|Baustoffe
+nautilus_shell|Nautilusschale|item/nautilus_shell|Baustoffe
+prismarine_shard|Prismarinscherbe|item/prismarine_shard|Baustoffe
+prismarine_crystals|Prismarinkristalle|item/prismarine_crystals|Baustoffe
+phantom_membrane|Phantomhaut|item/phantom_membrane|Baustoffe
+turtle_scute|Schildkrötenschuppe|item/turtle_scute|Baustoffe
+armadillo_scute|Gürteltierschuppe|item/armadillo_scute|Baustoffe
+breeze_rod|Windrute|item/breeze_rod|Baustoffe
+echo_shard|Echoscherbe|item/echo_shard|Baustoffe
+disc_fragment_5|Schallplattenfragment|item/disc_fragment_5|Baustoffe
+paper|Papier|item/paper|Baustoffe
+glass_bottle|Glasflasche|item/glass_bottle|Baustoffe
+potion|Trank|item/potion|Baustoffe
+fire_charge|Feuerkugel|item/fire_charge|Baustoffe
+white_bed|Weißes Bett|item/white_bed|Baustoffe
+white_banner|Weißes Banner|item/white_banner|Baustoffe
+goat_horn|Ziegenhorn|item/goat_horn|Baustoffe
+music_disc_pigstep|Schallplatte (Pigstep)|item/music_disc_pigstep|Baustoffe
+music_disc_cat|Schallplatte (cat)|item/music_disc_cat|Baustoffe
+white_wool|Weiße Wolle|block/white_wool|Baustoffe
+white_carpet|Weißer Teppich|block/white_wool|Baustoffe
+white_concrete|Weißer Beton|block/white_concrete|Baustoffe
+white_concrete_powder|Weißes Zementpulver|block/white_concrete_powder|Baustoffe
+white_terracotta|Weiße Terrakotta|block/white_terracotta|Baustoffe
+white_glazed_terracotta|Weiße glasierte Terrakotta|block/white_glazed_terracotta|Baustoffe
+white_stained_glass|Weißes gefärbtes Glas|block/white_stained_glass|Baustoffe
+white_dye|Weißer Farbstoff|item/white_dye|Baustoffe
+light_gray_wool|Hellgraue Wolle|block/light_gray_wool|Baustoffe
+light_gray_carpet|Hellgrauer Teppich|block/light_gray_wool|Baustoffe
+light_gray_concrete|Hellgrauer Beton|block/light_gray_concrete|Baustoffe
+light_gray_concrete_powder|Hellgraues Zementpulver|block/light_gray_concrete_powder|Baustoffe
+light_gray_terracotta|Hellgraue Terrakotta|block/light_gray_terracotta|Baustoffe
+light_gray_glazed_terracotta|Hellgraue glasierte Terrakotta|block/light_gray_glazed_terracotta|Baustoffe
+light_gray_stained_glass|Hellgraues gefärbtes Glas|block/light_gray_stained_glass|Baustoffe
+light_gray_dye|Hellgrauer Farbstoff|item/light_gray_dye|Baustoffe
+light_gray_bed|Hellgraues Bett|item/light_gray_bed|Baustoffe
+light_gray_banner|Hellgraues Banner|item/light_gray_banner|Baustoffe
+gray_wool|Graue Wolle|block/gray_wool|Baustoffe
+gray_carpet|Grauer Teppich|block/gray_wool|Baustoffe
+gray_concrete|Grauer Beton|block/gray_concrete|Baustoffe
+gray_concrete_powder|Graues Zementpulver|block/gray_concrete_powder|Baustoffe
+gray_terracotta|Graue Terrakotta|block/gray_terracotta|Baustoffe
+gray_glazed_terracotta|Graue glasierte Terrakotta|block/gray_glazed_terracotta|Baustoffe
+gray_stained_glass|Graues gefärbtes Glas|block/gray_stained_glass|Baustoffe
+gray_dye|Grauer Farbstoff|item/gray_dye|Baustoffe
+gray_bed|Graues Bett|item/gray_bed|Baustoffe
+gray_banner|Graues Banner|item/gray_banner|Baustoffe
+black_wool|Schwarze Wolle|block/black_wool|Baustoffe
+black_carpet|Schwarzer Teppich|block/black_wool|Baustoffe
+black_concrete|Schwarzer Beton|block/black_concrete|Baustoffe
+black_concrete_powder|Schwarzes Zementpulver|block/black_concrete_powder|Baustoffe
+black_terracotta|Schwarze Terrakotta|block/black_terracotta|Baustoffe
+black_glazed_terracotta|Schwarze glasierte Terrakotta|block/black_glazed_terracotta|Baustoffe
+black_stained_glass|Schwarzes gefärbtes Glas|block/black_stained_glass|Baustoffe
+black_dye|Schwarzer Farbstoff|item/black_dye|Baustoffe
+black_bed|Schwarzes Bett|item/black_bed|Baustoffe
+black_banner|Schwarzes Banner|item/black_banner|Baustoffe
+brown_wool|Braune Wolle|block/brown_wool|Baustoffe
+brown_carpet|Brauner Teppich|block/brown_wool|Baustoffe
+brown_concrete|Brauner Beton|block/brown_concrete|Baustoffe
+brown_concrete_powder|Braunes Zementpulver|block/brown_concrete_powder|Baustoffe
+brown_terracotta|Braune Terrakotta|block/brown_terracotta|Baustoffe
+brown_glazed_terracotta|Braune glasierte Terrakotta|block/brown_glazed_terracotta|Baustoffe
+brown_stained_glass|Braunes gefärbtes Glas|block/brown_stained_glass|Baustoffe
+brown_dye|Brauner Farbstoff|item/brown_dye|Baustoffe
+brown_bed|Braunes Bett|item/brown_bed|Baustoffe
+brown_banner|Braunes Banner|item/brown_banner|Baustoffe
+red_wool|Rote Wolle|block/red_wool|Baustoffe
+red_carpet|Roter Teppich|block/red_wool|Baustoffe
+red_concrete|Roter Beton|block/red_concrete|Baustoffe
+red_concrete_powder|Rotes Zementpulver|block/red_concrete_powder|Baustoffe
+red_terracotta|Rote Terrakotta|block/red_terracotta|Baustoffe
+red_glazed_terracotta|Rote glasierte Terrakotta|block/red_glazed_terracotta|Baustoffe
+red_stained_glass|Rotes gefärbtes Glas|block/red_stained_glass|Baustoffe
+red_dye|Roter Farbstoff|item/red_dye|Baustoffe
+red_bed|Rotes Bett|item/red_bed|Baustoffe
+red_banner|Rotes Banner|item/red_banner|Baustoffe
+orange_wool|Orange Wolle|block/orange_wool|Baustoffe
+orange_carpet|Oranger Teppich|block/orange_wool|Baustoffe
+orange_concrete|Oranger Beton|block/orange_concrete|Baustoffe
+orange_concrete_powder|Oranges Zementpulver|block/orange_concrete_powder|Baustoffe
+orange_terracotta|Orange Terrakotta|block/orange_terracotta|Baustoffe
+orange_glazed_terracotta|Orange glasierte Terrakotta|block/orange_glazed_terracotta|Baustoffe
+orange_stained_glass|Oranges gefärbtes Glas|block/orange_stained_glass|Baustoffe
+orange_dye|Oranger Farbstoff|item/orange_dye|Baustoffe
+orange_bed|Oranges Bett|item/orange_bed|Baustoffe
+orange_banner|Oranges Banner|item/orange_banner|Baustoffe
+yellow_wool|Gelbe Wolle|block/yellow_wool|Baustoffe
+yellow_carpet|Gelber Teppich|block/yellow_wool|Baustoffe
+yellow_concrete|Gelber Beton|block/yellow_concrete|Baustoffe
+yellow_concrete_powder|Gelbes Zementpulver|block/yellow_concrete_powder|Baustoffe
+yellow_terracotta|Gelbe Terrakotta|block/yellow_terracotta|Baustoffe
+yellow_glazed_terracotta|Gelbe glasierte Terrakotta|block/yellow_glazed_terracotta|Baustoffe
+yellow_stained_glass|Gelbes gefärbtes Glas|block/yellow_stained_glass|Baustoffe
+yellow_dye|Gelber Farbstoff|item/yellow_dye|Baustoffe
+yellow_bed|Gelbes Bett|item/yellow_bed|Baustoffe
+yellow_banner|Gelbes Banner|item/yellow_banner|Baustoffe
+lime_wool|Hellgrüne Wolle|block/lime_wool|Baustoffe
+lime_carpet|Hellgrüner Teppich|block/lime_wool|Baustoffe
+lime_concrete|Hellgrüner Beton|block/lime_concrete|Baustoffe
+lime_concrete_powder|Hellgrünes Zementpulver|block/lime_concrete_powder|Baustoffe
+lime_terracotta|Hellgrüne Terrakotta|block/lime_terracotta|Baustoffe
+lime_glazed_terracotta|Hellgrüne glasierte Terrakotta|block/lime_glazed_terracotta|Baustoffe
+lime_stained_glass|Hellgrünes gefärbtes Glas|block/lime_stained_glass|Baustoffe
+lime_dye|Hellgrüner Farbstoff|item/lime_dye|Baustoffe
+lime_bed|Hellgrünes Bett|item/lime_bed|Baustoffe
+lime_banner|Hellgrünes Banner|item/lime_banner|Baustoffe
+green_wool|Grüne Wolle|block/green_wool|Baustoffe
+green_carpet|Grüner Teppich|block/green_wool|Baustoffe
+green_concrete|Grüner Beton|block/green_concrete|Baustoffe
+green_concrete_powder|Grünes Zementpulver|block/green_concrete_powder|Baustoffe
+green_terracotta|Grüne Terrakotta|block/green_terracotta|Baustoffe
+green_glazed_terracotta|Grüne glasierte Terrakotta|block/green_glazed_terracotta|Baustoffe
+green_stained_glass|Grünes gefärbtes Glas|block/green_stained_glass|Baustoffe
+green_dye|Grüner Farbstoff|item/green_dye|Baustoffe
+green_bed|Grünes Bett|item/green_bed|Baustoffe
+green_banner|Grünes Banner|item/green_banner|Baustoffe
+cyan_wool|Türkise Wolle|block/cyan_wool|Baustoffe
+cyan_carpet|Türkiser Teppich|block/cyan_wool|Baustoffe
+cyan_concrete|Türkiser Beton|block/cyan_concrete|Baustoffe
+cyan_concrete_powder|Türkises Zementpulver|block/cyan_concrete_powder|Baustoffe
+cyan_terracotta|Türkise Terrakotta|block/cyan_terracotta|Baustoffe
+cyan_glazed_terracotta|Türkise glasierte Terrakotta|block/cyan_glazed_terracotta|Baustoffe
+cyan_stained_glass|Türkises gefärbtes Glas|block/cyan_stained_glass|Baustoffe
+cyan_dye|Türkiser Farbstoff|item/cyan_dye|Baustoffe
+cyan_bed|Türkises Bett|item/cyan_bed|Baustoffe
+cyan_banner|Türkises Banner|item/cyan_banner|Baustoffe
+light_blue_wool|Hellblaue Wolle|block/light_blue_wool|Baustoffe
+light_blue_carpet|Hellblauer Teppich|block/light_blue_wool|Baustoffe
+light_blue_concrete|Hellblauer Beton|block/light_blue_concrete|Baustoffe
+light_blue_concrete_powder|Hellblaues Zementpulver|block/light_blue_concrete_powder|Baustoffe
+light_blue_terracotta|Hellblaue Terrakotta|block/light_blue_terracotta|Baustoffe
+light_blue_glazed_terracotta|Hellblaue glasierte Terrakotta|block/light_blue_glazed_terracotta|Baustoffe
+light_blue_stained_glass|Hellblaues gefärbtes Glas|block/light_blue_stained_glass|Baustoffe
+light_blue_dye|Hellblauer Farbstoff|item/light_blue_dye|Baustoffe
+light_blue_bed|Hellblaues Bett|item/light_blue_bed|Baustoffe
+light_blue_banner|Hellblaues Banner|item/light_blue_banner|Baustoffe
+blue_wool|Blaue Wolle|block/blue_wool|Baustoffe
+blue_carpet|Blauer Teppich|block/blue_wool|Baustoffe
+blue_concrete|Blauer Beton|block/blue_concrete|Baustoffe
+blue_concrete_powder|Blaues Zementpulver|block/blue_concrete_powder|Baustoffe
+blue_terracotta|Blaue Terrakotta|block/blue_terracotta|Baustoffe
+blue_glazed_terracotta|Blaue glasierte Terrakotta|block/blue_glazed_terracotta|Baustoffe
+blue_stained_glass|Blaues gefärbtes Glas|block/blue_stained_glass|Baustoffe
+blue_dye|Blauer Farbstoff|item/blue_dye|Baustoffe
+blue_bed|Blaues Bett|item/blue_bed|Baustoffe
+blue_banner|Blaues Banner|item/blue_banner|Baustoffe
+purple_wool|Violette Wolle|block/purple_wool|Baustoffe
+purple_carpet|Violetter Teppich|block/purple_wool|Baustoffe
+purple_concrete|Violetter Beton|block/purple_concrete|Baustoffe
+purple_concrete_powder|Violettes Zementpulver|block/purple_concrete_powder|Baustoffe
+purple_terracotta|Violette Terrakotta|block/purple_terracotta|Baustoffe
+purple_glazed_terracotta|Violette glasierte Terrakotta|block/purple_glazed_terracotta|Baustoffe
+purple_stained_glass|Violettes gefärbtes Glas|block/purple_stained_glass|Baustoffe
+purple_dye|Violetter Farbstoff|item/purple_dye|Baustoffe
+purple_bed|Violettes Bett|item/purple_bed|Baustoffe
+purple_banner|Violettes Banner|item/purple_banner|Baustoffe
+magenta_wool|Magenta Wolle|block/magenta_wool|Baustoffe
+magenta_carpet|Magenta Teppich|block/magenta_wool|Baustoffe
+magenta_concrete|Magenta Beton|block/magenta_concrete|Baustoffe
+magenta_concrete_powder|Magenta Zementpulver|block/magenta_concrete_powder|Baustoffe
+magenta_terracotta|Magenta Terrakotta|block/magenta_terracotta|Baustoffe
+magenta_glazed_terracotta|Magenta glasierte Terrakotta|block/magenta_glazed_terracotta|Baustoffe
+magenta_stained_glass|Magenta gefärbtes Glas|block/magenta_stained_glass|Baustoffe
+magenta_dye|Magenta Farbstoff|item/magenta_dye|Baustoffe
+magenta_bed|Magenta Bett|item/magenta_bed|Baustoffe
+magenta_banner|Magenta Banner|item/magenta_banner|Baustoffe
+pink_wool|Rosa Wolle|block/pink_wool|Baustoffe
+pink_carpet|Rosa Teppich|block/pink_wool|Baustoffe
+pink_concrete|Rosa Beton|block/pink_concrete|Baustoffe
+pink_concrete_powder|Rosa Zementpulver|block/pink_concrete_powder|Baustoffe
+pink_terracotta|Rosa Terrakotta|block/pink_terracotta|Baustoffe
+pink_glazed_terracotta|Rosa glasierte Terrakotta|block/pink_glazed_terracotta|Baustoffe
+pink_stained_glass|Rosa gefärbtes Glas|block/pink_stained_glass|Baustoffe
+pink_dye|Rosa Farbstoff|item/pink_dye|Baustoffe
+pink_bed|Rosa Bett|item/pink_bed|Baustoffe
+pink_banner|Rosa Banner|item/pink_banner|Baustoffe`.split('\n').map(l=>{ const a=l.split('|'); return {id:a[0], name:a[1], tex:a[2], cat:a[3], q:(a[1]+' '+a[0].replace(/_/g,' ')).toLowerCase()}; });
+function renderMcResults(){
+  const q = $('#mcSearch').value.trim().toLowerCase().replace(/_/g,' ');
+  const words = q.split(/\s+/).filter(Boolean);
+  const hits = MC_ITEMS.filter(it => words.every(w => it.q.includes(w)));
+  const box = $('#mcResults'); box.innerHTML = '';
+  hits.slice(0,40).forEach(it=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab-btn'; b.style.cssText = 'display:flex;align-items:center;gap:8px;text-align:left;width:100%';
+    const im = document.createElement('img'); im.dataset.k = 'mc_' + it.id; im.src = ico('mc_' + it.id, it.tex);
+    im.width = 24; im.height = 24; im.style.imageRendering = 'pixelated';
+    const t = document.createElement('span'); t.textContent = it.name;
+    const g = document.createElement('small'); g.textContent = it.id; g.style.opacity = '.55'; g.style.marginLeft = 'auto';
+    b.append(im, t, g);
+    b.onclick = () => {
+      $('#newName').value = it.name; $('#newTex').value = it.tex;
+      if($('#newArea').value !== 'pawn' && !CATS.includes($('#newCat').value)) $('#newCat').value = it.cat;  // eigene Kategorie bleibt gewählt
+      $('#mcInfo').textContent = '✔ Ausgewählt: ' + it.name + ' – jetzt Preis eintragen und „Item hinzufügen“ klicken.';
+      $('#newPrice').focus();
+    };
+    box.appendChild(b);
+  });
+  $('#mcInfo').textContent = hits.length > 40 ? `${hits.length} Treffer – die ersten 40 werden gezeigt, Suche eingrenzen.` : (hits.length ? `${hits.length} Treffer` : 'Nichts gefunden – du kannst Name und Textur unten auch selbst eintippen.');
+}
+$('#mcSearch').oninput = renderMcResults;
+renderMcResults();
+
+// ====== Eigene Kategorien ======
+function renderCatAdmin(){
+  const box = $('#catList'); if(!box) return;
+  box.innerHTML = CATS.length ? '' : '<small style="color:#5f7a68">Noch keine eigenen Kategorien.</small>';
+  CATS.forEach(c=>{
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tab-btn'; b.dataset.delcat = c;
+    b.title = 'Kategorie löschen'; b.textContent = c + '  ✕';
+    box.appendChild(b);
+  });
+}
+$('#catAddBtn').onclick = () => {
+  const err = $('#catErr'), ok = $('#catOk'); err.hidden = true; ok.hidden = true;
+  const name = $('#catNew').value.trim().replace(/\s+/g,' ');
+  const low = name.toLowerCase();
+  if(name.length < 2){ err.textContent = 'Bitte gib einen Namen mit mindestens 2 Zeichen ein.'; err.hidden = false; return; }
+  const taken = ['alle','pfand',...BASE_CATS.flatMap(b=>[b[0].toLowerCase(), b[1].toLowerCase()]),...CATS.map(c=>c.toLowerCase())];
+  if(taken.includes(low)){ err.textContent = 'Diese Kategorie gibt es schon.'; err.hidden = false; return; }
+  CATS.push(name);
+  fillCatSelects(); $('#newCat').value = name; renderFilters(); renderCatAdmin();
+  $('#catNew').value = '';
+  ok.textContent = `✅ Kategorie „${name}“ angelegt und im Feld „Kategorie“ oben ausgewählt. Jetzt unten auf „Preise speichern“ klicken.`;
+  ok.hidden = false;
+};
+$('#catList').addEventListener('click', e=>{
+  const c = e.target.dataset && e.target.dataset.delcat; if(!c) return;
+  const n = ITEMS.filter(i=>i.cat === c).length;
+  if(n && !confirm(`In „${c}“ liegen ${n} Item(s). Sie wandern nach „Holz / Kisten / Eisen“. Kategorie löschen?`)) return;
+  ITEMS.forEach(i=>{ if(i.cat === c) i.cat = 'Baustoffe'; });
+  CATS = CATS.filter(x=>x !== c);
+  if(state.cat === c) state.cat = 'Alle';
+  const sn = adminSnap();
+  fillCatSelects(); renderFilters(); renderGrid(); renderCatAdmin(); renderAdminLists(); adminRestore(sn);
+});
+renderCatAdmin();
+$('#newArea').onchange = () => { $('#newCatRow').style.display = $('#newArea').value === 'pawn' ? 'none' : ''; };
+
+// Neues Item anlegen (wird erst mit „Preise speichern“ für alle gespeichert)
+$('#newAddBtn').onclick = () => {
+  const err = $('#newErr'), ok = $('#newOk');
+  err.hidden = true; ok.hidden = true;
+  const name = $('#newName').value.trim();
+  const price = parseFloat($('#newPrice').value);
+  if(name.length < 2){ err.textContent = 'Bitte gib einen Namen ein.'; err.hidden = false; return; }
+  if(!(price > 0)){ err.textContent = 'Der Preis muss größer als 0 sein.'; err.hidden = false; return; }
+  const pawn = $('#newArea').value === 'pawn';
+  let tex = $('#newTex').value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_\/]/g,'');
+  if(tex && !tex.includes('/')) tex = 'item/' + tex;
+  const id = 'c_' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36);
+  const it = {id, tex: tex || ('item/'+id), name, cat: pawn ? 'Pfand' : $('#newCat').value, tier: pawn ? 'p' : 'b',
+    ench:[], price, rar: pawn ? 'Ankauf' : 'Eigenes Item', custom:true, pawn};
+  const sn = adminSnap();
+  ITEMS.push(it); BY_ID[id] = it;
+  renderAdminLists(); adminRestore(sn);
+  $('#newName').value = ''; $('#newTex').value = ''; $('#newPrice').value = 1;
+  ok.textContent = `✅ „${name}“ wurde hinzugefügt (${pawn ? 'Reiter Ankaufspreise' : 'Reiter Shop-Preise'}). Jetzt unten auf „Preise speichern“ klicken.`;
+  ok.hidden = false;
+};
+// Eigene Items wieder löschen
+$('#adminEditorView').addEventListener('click', e=>{
+  const id = e.target.dataset && e.target.dataset.del; if(!id) return;
+  const sn = adminSnap();
+  const idx = ITEMS.findIndex(i=>i.id === id);
+  if(idx >= 0){ ITEMS.splice(idx,1); delete BY_ID[id]; }
+  renderAdminLists(); adminRestore(sn);
+});
+
+$('#closeAdmin').onclick = $('#cancelAdmin').onclick = () => adminDlg.close();
+
+// Tastenkombination: Drücke "Shift + A" auf der Tastatur als Secret Shortcut
+document.addEventListener('keydown', e => {
+  if(e.shiftKey && (e.key === 'A' || e.key === 'a') && !e.target.matches('input, textarea')){
+    e.preventDefault();
+    openAdminDialog();
+  }
+});
+
+let admFails = 0, admLockUntil = Number(localStorage.getItem('alexshop_admlock')) || 0;
+$('#checkPinBtn').onclick = () => {
+  const pin = $('#adminPin').value.trim(), err = $('#pinErr');
+  if(Date.now() < admLockUntil){
+    err.textContent = `⏳ Gesperrt. Bitte warte ${Math.ceil((admLockUntil-Date.now())/1000)} Sekunden.`; err.hidden = false; return;
+  }
+  if(hashCred('admin', pin) === ADMIN_HASH){
+    admFails = 0; adminUnlocked = true;
+    showAdminEditor();
+  } else {
+    admFails++;
+    if(admFails >= 5){ admFails = 0; admLockUntil = Date.now() + 300000; try{ localStorage.setItem('alexshop_admlock', admLockUntil); }catch(e){} err.textContent = '⏳ Zu viele Fehlversuche – 5 Minuten gesperrt.'; }
+    else err.textContent = 'Falsches Passwort.';
+    err.hidden = false;
+    $('#adminPin').value = '';
+    $('#adminPin').focus();
+  }
+};
+
+$('#adminPin').addEventListener('keydown', e => {
+  if(e.key === 'Enter') $('#checkPinBtn').click();
+});
+
+$('#savePricesBtn').onclick = async () => {
+  const saveBtn = $('#savePricesBtn');
+  // Sperre: Ankauf darf nie so teuer sein wie der Shop-Verkauf (sonst gibt es keinen Gewinn)
+  const bad = ITEMS.filter(i=>i.pawn && i.pair).find(i=>{
+    const a = parseFloat(document.querySelector(`.admin-p-input[data-item="${i.id}"]`).value);
+    const b = parseFloat(document.querySelector(`.admin-p-input[data-item="${i.pair}"]`).value);
+    return !(a < b);
+  });
+  const warn = $('#admWarn');
+  if(bad){
+    warn.textContent = `⚠️ ${bad.name}: Der Ankaufspreis muss unter dem Shop-Preis liegen, sonst machst du Verlust. Nichts gespeichert.`;
+    warn.hidden = false; setAdminTab('pawn'); return;
+  }
+  const badRw = REWARD_IDS.find(id=>{
+    const act = document.querySelector(`.admin-rw-act[data-rw="${id}"]`), cost = parseFloat(document.querySelector(`.admin-rw-cost[data-rw="${id}"]`).value) || 0;
+    return act && act.checked && cost < Math.ceil(rwValue(id) * MIN_PPV);
+  });
+  if(badRw){
+    warn.textContent = `⚠️ Punkteshop: „${BY_ID[badRw].name}“ ist zu billig (mindestens ${MIN_PPV} ⭐ pro 💎 Warenwert). Nichts gespeichert.`;
+    warn.hidden = false; setAdminTab('pts'); return;
+  }
+  warn.hidden = true;
+  const custom = {};
+  document.querySelectorAll('.admin-p-input').forEach(input => {
+    const id = input.dataset.item;
+    const p = parseFloat(input.value);
+    if(BY_ID[id] && !isNaN(p) && p > 0){
+      BY_ID[id].price = p;
+      custom[id] = p;
+    }
+  });
+
+  // Sortiment: ausgeblendete und eigene Items mitspeichern
+  const hiddenIds = [...document.querySelectorAll('.admin-vis')].filter(c=>!c.checked).map(c=>c.dataset.item);
+  ITEMS.forEach(i=>{ i.hidden = hiddenIds.includes(i.id); });
+  custom.__hidden = hiddenIds;
+  custom.__cats = CATS.slice();
+  custom.__custom = ITEMS.filter(i=>i.custom).map(i=>({id:i.id, name:i.name, cat:i.cat, price:i.price, tex:i.tex, pawn:!!i.pawn}));
+  // Punkte: Hat der Admin einen Wert nicht angefasst, gilt der aktuelle Cloud-Stand (automatische Gutschriften gehen nicht verloren)
+  let latestPts = null, latestOrders = null, latestBlocked = null, latestAdmins = null;
+  try{ if(CLOUD_BIN_ID && CLOUD_API_KEY){ const g = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {headers:{'X-Master-Key':CLOUD_API_KEY}}); if(g.ok){ const r = ((await g.json())||{}).record; if(r && isObj(r.__points)) latestPts = r.__points; if(r && Array.isArray(r.__orders)) latestOrders = r.__orders; if(r && Array.isArray(r.__blocked)) latestBlocked = r.__blocked; if(r && Array.isArray(r.__admins)) latestAdmins = r.__admins; } } }catch(e){}
+  const pts = {}; document.querySelectorAll('.admin-pts').forEach(i=>{
+    let n = Math.max(0, Math.floor(parseFloat(i.value)||0));
+    if(latestPts && n === (ptsBase[i.dataset.pl]||0)) n = Math.max(0, Math.floor(Number(latestPts[i.dataset.pl])||0));
+    if(n > 0) pts[i.dataset.pl] = n;
+  });
+  AUTOPTS = $('#admAutoPts').checked; custom.__autopts = AUTOPTS;
+  custom.__orders = latestOrders || ORDERS;
+  custom.__blocked = latestBlocked || BLOCKED; custom.__admins = latestAdmins || ADMINS; custom.__rewardIds = REWARD_IDS.slice();   // Bestellungen aus der Cloud nie überschreiben
+  const rw = {}; document.querySelectorAll('.admin-rw-cost').forEach(i=>{
+    rw[i.dataset.rw] = {cost: Math.max(1, Math.floor(parseFloat(i.value)||1)), active: document.querySelector(`.admin-rw-act[data-rw="${i.dataset.rw}"]`).checked};
+  });
+  POINTS = pts; REWARD_CFG = rw;
+  custom.__points = pts; custom.__rewards = rw; custom.__sale = SALE;
+  pruneCarts(); updatePtsChip(); renderPts(); tickSale();
+
+  try {
+    localStorage.setItem('alexshop_custom_prices', JSON.stringify(custom));
+  } catch(e) {}
+
+  renderGrid(); renderPawn(); renderCart(); updatePawnBar();
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Cloud synchronisieren …';
+
+  try {
+    if(CLOUD_BIN_ID && CLOUD_API_KEY){
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': CLOUD_API_KEY
+        },
+        body: JSON.stringify(custom)
+      });
+      if(!res.ok) throw new Error('Cloud HTTP ' + res.status);
+    }
+    adminDlg.close();
+    toast('🌐 Preise und Sortiment LIVE in der Cloud für ALLE gespeichert!');
+  } catch(err) {
+    adminDlg.close();
+    toast('⚠️ Lokal gespeichert, Cloud-Sync fehlgeschlagen.');
+    console.error(err);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Preise speichern';
+  }
+};
+
+$('#resetPricesBtn').onclick = async () => {
+  if(!confirm('Alle Preise, das Sortiment, Punkte UND Bestellungen wirklich auf Standard zurücksetzen?')) return;
+  try { localStorage.removeItem('alexshop_custom_prices'); } catch(e) {}
+  
+  try {
+    if(CLOUD_BIN_ID && CLOUD_API_KEY){
+      await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': CLOUD_API_KEY },
+        body: JSON.stringify({})
+      });
+    }
+  } catch(e) {}
+
+  location.reload();
+};
+
+// ====== Login & Whitelist Logik ======
+function checkSavedLogin(){
+  const saved = localStorage.getItem('alexshop_user');
+  const savedTok = localStorage.getItem('alexshop_tok');
+  if(saved && matchWhitelist(saved) && HASHES[matchWhitelist(saved)] === savedTok){
+    setLoggedInUser(matchWhitelist(saved));
+  } else {
+    $('#loginOverlay').style.display = 'grid';
+    setTimeout(() => $('#loginUsername').focus(), 100);
+  }
+}
+
+function matchWhitelist(inputName){
+  return WHITELIST.find(name => name.toLowerCase() === inputName.trim().toLowerCase()) || null;
+}
+
+async function handleLogin(){
+  const err = $('#loginError');
+  if(Date.now() < loginLockUntil){
+    err.textContent = `⏳ Zu viele Versuche. Bitte warte ${Math.ceil((loginLockUntil-Date.now())/1000)} Sekunden.`;
+    err.hidden = false; return;
+  }
+  const input = $('#loginUsername').value.trim();
+  const pin = $('#loginPin').value.trim();
+  const matched = matchWhitelist(input);
+  if(matched && pinOk(matched, pin)){
+    try{ applyAccess(await fetchRecord()); }catch(e){}
+    if(BLOCKED.includes(matched)){ err.textContent = '🚫 Dein Zugang wurde gesperrt. Bitte wende dich an den Admin.'; err.hidden = false; $('#loginPin').value = ''; return; }
+    err.hidden = true; loginFails = 0;
+    localStorage.setItem('alexshop_user', matched);
+    localStorage.setItem('alexshop_tok', hashCred(matched, String(pin||'').trim()));
+    $('#loginPin').value = '';
+    setLoggedInUser(matched);
+  } else {
+    loginFails++;
+    if(loginFails >= 5){ loginFails = 0; loginLockUntil = Date.now() + 30000; try{ localStorage.setItem('alexshop_loglock', loginLockUntil); }catch(e){} err.textContent = '⏳ Zu viele Fehlversuche. Bitte warte 30 Sekunden.'; }
+    else err.textContent = '❌ Name oder Passwort falsch!';
+    err.hidden = false;
+    $('#loginPin').value = '';
+    $('#loginPin').focus();
+  }
+}
+
+function setLoggedInUser(name){
+  if(BLOCKED.includes(name)){
+    localStorage.removeItem('alexshop_user'); localStorage.removeItem('alexshop_tok');
+    const e = $('#loginError'); e.textContent = '🚫 Dein Zugang wurde gesperrt. Bitte wende dich an den Admin.'; e.hidden = false; return;
+  }
+  currentUser = name; refreshAdminUi();
+  $('#loginOverlay').style.display = 'none';
+  $('#userProfile').hidden = false;
+  $('#userNameDisplay').textContent = name;
+  updatePtsChip(); renderPts();
+  setHeadImg($('#userHead'), name, 32);
+  toast(`Willkommen im Shop, ${name}! 👋`);
+}
+
+$('#logoutBtn').onclick = () => {
+  localStorage.removeItem('alexshop_user');
+  localStorage.removeItem('alexshop_tok');
+  $('#loginPin').value = '';
+  currentUser = null;
+  $('#userProfile').hidden = true;
+  $('#loginUsername').value = '';
+  $('#loginError').hidden = true;
+  $('#loginOverlay').style.display = 'grid';
+  setTimeout(() => $('#loginUsername').focus(), 100);
+};
+
+// ====== Suche, Animationen, Hell/Dunkel ======
+state.q = '';
+function matchQ(i){ return !state.q || (i.name + ' ' + i.id.replace(/_/g,' ')).toLowerCase().includes(state.q); }
+let enterFlag = true;
+function endEnter(){ clearTimeout(endEnter.t); endEnter.t = setTimeout(()=>{ enterFlag = false; }, 150); }
+function stagger(sel){
+  const g = document.querySelector(sel); if(!g) return;
+  if(!g.children.length && state.q) g.innerHTML = '<p class="empty">😕 Nichts gefunden – versuch einen anderen Suchbegriff.</p>';
+  if(!enterFlag) return;
+  g.querySelectorAll('.card').forEach((c,i)=>{ c.style.setProperty('--i', Math.min(i,14)); c.classList.add('enter'); });
+}
+{
+  const _rg = renderGrid, _rp = renderPawn, _rt = renderPts;
+  renderGrid = function(){ _rg.apply(this, arguments); stagger('#grid'); endEnter(); };
+  renderPawn = function(){ _rp.apply(this, arguments); stagger('#pawnGrid'); endEnter(); };
+  renderPts = function(){ _rt.apply(this, arguments); stagger('#ptsGrid'); endEnter(); };
+}
+document.addEventListener('click', e=>{ if(e.target.closest('#catChips .chip, #subChips .chip, .nav-tabs .tab-btn')){ enterFlag = true; endEnter(); } }, true);
+let searchT;
+$('#searchInput').addEventListener('input', e=>{
+  clearTimeout(searchT);
+  searchT = setTimeout(()=>{ state.q = e.target.value.trim().toLowerCase(); enterFlag = true; renderGrid(); renderPawn(); renderPts(); }, 120);
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === '/' && !e.target.matches('input, textarea, select')){ e.preventDefault(); $('#searchInput').focus(); }
+});
+// Warenkorb-/Bestell-Zähler wackeln bei Änderung
+['badge','ordBadge'].forEach(id=>{ const el = document.getElementById(id); if(!el) return;
+  new MutationObserver(()=>{ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }).observe(el, {childList:true, characterData:true, subtree:true}); });
+function setTheme(t, animate){
+  document.documentElement.dataset.theme = t;
+  try{ localStorage.setItem('alexshop_theme', t); }catch(e){}
+  document.querySelectorAll('.theme-toggle').forEach(b=>{ b.innerHTML = '<span class="emo">' + (t === 'dark' ? '☀️' : '🌙') + '</span>'; b.title = t === 'dark' ? 'Heller Modus' : 'Dunkler Modus'; if(animate){ b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); } });
+}
+document.querySelectorAll('.theme-toggle').forEach(b=>b.addEventListener('click', ()=>setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true)));
+setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light', false);
+setTimeout(()=>{ enterFlag = false; }, 1500);
+
+// ====== Start ======
+checkSavedLogin();
+applyStaticTex();
+renderFilters();
+renderGrid(); renderPawn(); renderCart();
+syncPricesFromCloud();
+tickSale(); setInterval(tickSale, 1000);
+</script>
+
+<script>
+// Kirschblüten Canvas Animation
+(function(){
+  const cv=document.getElementById('petals'),cx=cv.getContext('2d');
+  const SHAPES=[['.aab.','aabbb','abbbc','.bbcc','..cc.'],['..a..','.abb.','abbbc','.bbc.','..c..']];
+  const PALS=[{a:'#ffe6f1',b:'#ffb6d3',c:'#f585b3'},{a:'#a6e093',b:'#62b258',c:'#3d8040'}];
+  const sprites=[0,1].map(sh=>{
+    const c=document.createElement('canvas');c.width=c.height=5;const x=c.getContext('2d');
+    SHAPES[sh].forEach((r,y)=>[...r].forEach((ch,i)=>{ if(ch!=='.'){ x.fillStyle=PALS[0][ch]; x.fillRect(i,y,1,1); } }));
+    return c;
+  });
+  let W=0,H=0,ps=[];
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  function mk(top){ return {k:Math.floor(rnd(0,2)),x:rnd(0,W),y:top?rnd(-H*.1,-10):rnd(0,H),s:Math.round(rnd(2,4.2)),vy:rnd(28,68),sw:rnd(12,32),f:rnd(.6,1.4),ph:rnd(0,6.28),r:rnd(0,6.28),vr:rnd(-1.2,1.2),a:rnd(.6,1)}; }
+  function size(){
+    const d=Math.min(devicePixelRatio||1,2);
+    W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);cx.imageSmoothingEnabled=false;
+    const n=Math.max(20,Math.min(60,Math.round(W/30)));
+    while(ps.length<n)ps.push(mk(false)); ps.length=n;
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    ps.forEach(p=>{
+      cx.save();cx.globalAlpha=p.a;cx.translate(Math.round(p.x),Math.round(p.y));cx.rotate(p.r);cx.scale(p.s,p.s);
+      cx.drawImage(sprites[p.k],-2.5,-2.5,5,5);cx.restore();
+    });
+  }
+  let last=0;
+  function tick(t){
+    const dt=Math.min((t-last)/1000||0,.05);last=t;
+    ps.forEach(p=>{
+      p.ph+=dt*p.f;p.y+=p.vy*dt;p.x+=Math.sin(p.ph)*p.sw*dt+5*dt;p.r+=p.vr*dt;
+      if(p.y>H+16){Object.assign(p,mk(true));}
+      if(p.x>W+16)p.x=-16;
+    });
+    draw();requestAnimationFrame(tick);
+  }
+  addEventListener('resize',size);
+  size();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
